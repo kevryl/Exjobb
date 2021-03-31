@@ -122,12 +122,12 @@ for timeTicker in range(4000):
         
         agentSymptom = Symptom(agentSymptom, agentPlasma, plasmaMax)
         
-        # gridStructure =[[[] for x in range(gridSize)] for y in range(gridSize)]
-        # flooredAgentPosition = np.floor(agentPosition)
-        # for ix in range(populationSize):
-        #     rowIndex = flooredAgentPosition[ix][0].astype('int')
-        #     columnIndex = flooredAgentPosition[ix][1].astype('int')
-        #     gridStructure[rowIndex][columnIndex].append(ix)
+        gridStructure =[[[] for x in range(gridSize)] for y in range(gridSize)]
+        flooredAgentPosition = np.floor(agentPosition)
+        for ix in range(populationSize):
+            rowIndex = flooredAgentPosition[ix][0].astype('int')
+            columnIndex = flooredAgentPosition[ix][1].astype('int')
+            gridStructure[rowIndex][columnIndex].append(ix)
             
 
         
