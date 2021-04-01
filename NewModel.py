@@ -5,6 +5,7 @@ Created on Tue Mar 30 11:17:30 2021
 @author: kevin
 """
 import numpy as np
+import matplotlib.pyplot as plt
 import time
 
 def Model(parameters, virus, plasma, mcell):
@@ -45,22 +46,43 @@ def CreateGridStructure(gridSize):
     return gridStructure
 
 def DiseaseSpeading(gridSize, gridStructure, virus, symptom):
-    for ix in range(grisSize):
+    for ix in range(gridSize):
         for jx in range(gridSize):
             if gridStructure[ix][jx] != [] and len(gridStructure[ix][jx]) != 1:
+                localInfected = []
+                localSusepteble = []
                 for agentIndex in gridStructure[ix][jx]:
+                    if virus[agentIndex] != 0:
+                        localInfected.append(agentIndex)
+                    else:
+                        localSusepteble.append(agentIndex)
                 
+                for localSuseptebleIndex in localSusepteble:
+                    for localInfectedIndex in localInfected:
+                        r = np.random.rand()
+                        meetingProbability = 1/symptom[localInfectedIndex]
+                        if r < infectionProbability*meetingProbability:
+                            virus[localSuseptebleIndex] = virus[localSuseptebleIndex] + 100
+                
+                # tempGridSturcture = gridStructure[ix][jx].copy()
+                # for kx in range(len(gridStructure[ix][jx])):
+                #     agentIndex = gridStructure[ix][jx][kx]
+                #     tempGridSturcture.pop(0) # Remove the agentIndex from tempGridStucture
+                #     for otherAgentIndex in tempGridSturcture:
+                #         print(agentIndex, otherAgentIndex)
+    return virus
 
 startTime = time.time()
 
 # Variables in the model
-populationSize = 20000
+populationSize = 2000
 gridSize = int(np.sqrt(populationSize)/2)
-infectionRate = 0.1
+infectionProbability = 0.1
 calculationTimer = 10
 vaccineProcent = 0.001
 vaccineDoses = int(np.ceil(vaccineProcent*populationSize))
 plasmaMax = 9000
+populationPlot = [[],[],[]]
 
 # Features to turn on and off
 plotOn = True
@@ -86,7 +108,7 @@ c = np.ones(populationSize)*np.random.uniform(0.1,10,populationSize)/parameterTi
 d = np.ones(populationSize)*0.001/parameterTimeChanger
 e = np.ones(populationSize)*1/parameterTimeChanger
 f = np.ones(populationSize)*0.5/parameterTimeChanger
-g = np.ones(populationSize)*0.1/parameterTimeChanger
+g = np.ones(populationSize)*0.01/parameterTimeChanger
 parameters.append(a)
 parameters.append(b)
 parameters.append(c)
@@ -101,13 +123,13 @@ for ix in range(populationSize):
     agentPosition[ix][1] = np.random.uniform(0,gridSize)
     agentSpeed[ix] = 0.2
     agentRotation[ix] = np.random.uniform(-np.pi,np.pi)
-    if ix < 50:
-        agentVirus[ix] = 1000        
+    if ix < 5:
+        agentVirus[ix] = 1000
+    if ix < populationSize/2 and ix > 5:
+        agentPlasma[ix] = plasmaMax
 
-maxVirus = 0
-maxPlasma = 0
 # Simulation starts
-for timeTicker in range(4000):
+for timeTicker in range(50000):
     agentMovement = np.transpose([np.cos(agentRotation), np.sin(agentRotation)]*agentSpeed)
     agentPosition = agentPosition + agentMovement
     
@@ -123,11 +145,9 @@ for timeTicker in range(4000):
                                                     agentVirus, 
                                                     agentPlasma, 
                                                     agentMcell)
-        if maxVirus < max(agentVirus): maxVirus = max(agentVirus)
-        if maxPlasma < max(agentPlasma): maxPlasma = max(agentPlasma)
-        
+
         agentSymptom = Symptom(agentSymptom, agentPlasma, plasmaMax)
-        print(agentSymptom[:10], agentPlasma[:10].astype(int))
+
         
         gridStructure =[[[] for x in range(gridSize)] for y in range(gridSize)]
         flooredAgentPosition = np.floor(agentPosition)
@@ -135,11 +155,39 @@ for timeTicker in range(4000):
             rowIndex = flooredAgentPosition[agentIndex][0].astype('int')
             columnIndex = flooredAgentPosition[agentIndex][1].astype('int')
             gridStructure[rowIndex][columnIndex].append(agentIndex)
-            
-
         
-print(maxVirus)
-print(maxPlasma)
+
+        agentVirus = DiseaseSpeading(gridSize, gridStructure, agentVirus, agentSymptom)
+        
+        totalSusepteble = 0
+        totalInfected = 0
+        totalImmune = 0
+        for ix in range(populationSize):
+            if agentVirus[ix] != 0:
+                totalInfected = totalInfected +1
+            elif agentPlasma[ix] != 0:
+                totalImmune = totalImmune + 1
+            else: 
+                totalSusepteble = totalSusepteble + 1
+                
+        if totalInfected == 0:
+            break
+        
+        populationPlot[0].append(totalSusepteble)
+        populationPlot[1].append(totalInfected)
+        populationPlot[2].append(totalImmune)
+
+if plotOn == True:
+    plotLength = range(len(populationPlot[0]))
+    plt.figure()
+    plt.plot(plotLength, populationPlot[0], 'g', plotLength, populationPlot[1], 'r',
+             plotLength, populationPlot[2], 'b')
+    plt.xlabel('Timecycles')
+    plt.ylabel('Number of agents')
+    plt.legend(['susepteble', 'infected', 'immune'])
+    plt.show()
+
+
 executionTime = (time.time() - startTime)
 print('Total execution time in seconds: ' + str(executionTime))
 
