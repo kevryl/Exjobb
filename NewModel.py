@@ -75,7 +75,7 @@ def DiseaseSpeading(gridSize, gridStructure, virus, symptom):
 startTime = time.time()
 
 # Variables in the model
-populationSize = 2000
+populationSize = 5000
 gridSize = int(np.sqrt(populationSize)/2)
 infectionProbability = 0.1
 calculationTimer = 10
@@ -83,6 +83,8 @@ vaccineProcent = 0.001
 vaccineDoses = int(np.ceil(vaccineProcent*populationSize))
 plasmaMax = 9000
 populationPlot = [[],[],[]]
+initialInfected = 100
+initialImmune = 2000 
 
 # Features to turn on and off
 plotOn = True
@@ -108,7 +110,7 @@ c = np.ones(populationSize)*np.random.uniform(0.1,10,populationSize)/parameterTi
 d = np.ones(populationSize)*0.001/parameterTimeChanger
 e = np.ones(populationSize)*1/parameterTimeChanger
 f = np.ones(populationSize)*0.5/parameterTimeChanger
-g = np.ones(populationSize)*0.01/parameterTimeChanger
+g = np.ones(populationSize)*0.005/parameterTimeChanger
 parameters.append(a)
 parameters.append(b)
 parameters.append(c)
@@ -123,13 +125,13 @@ for ix in range(populationSize):
     agentPosition[ix][1] = np.random.uniform(0,gridSize)
     agentSpeed[ix] = 0.2
     agentRotation[ix] = np.random.uniform(-np.pi,np.pi)
-    if ix < 5:
+    if ix < initialInfected:
         agentVirus[ix] = 1000
-    if ix < populationSize/2 and ix > 5:
+    if ix < initialImmune and ix > initialInfected:
         agentPlasma[ix] = plasmaMax
 
 # Simulation starts
-for timeTicker in range(50000):
+for timeTicker in range(500000):
     agentMovement = np.transpose([np.cos(agentRotation), np.sin(agentRotation)]*agentSpeed)
     agentPosition = agentPosition + agentMovement
     
