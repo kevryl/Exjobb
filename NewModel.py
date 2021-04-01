@@ -44,6 +44,12 @@ def CreateGridStructure(gridSize):
             gridStructure[ix].append([]) 
     return gridStructure
 
+def DiseaseSpeading(gridSize, gridStructure, virus, symptom):
+    for ix in range(grisSize):
+        for jx in range(gridSize):
+            if gridStructure[ix][jx] != [] and len(gridStructure[ix][jx]) != 1:
+                for agentIndex in gridStructure[ix][jx]:
+                
 
 startTime = time.time()
 
@@ -54,7 +60,7 @@ infectionRate = 0.1
 calculationTimer = 10
 vaccineProcent = 0.001
 vaccineDoses = int(np.ceil(vaccineProcent*populationSize))
-plasmaMax = 10000
+plasmaMax = 9000
 
 # Features to turn on and off
 plotOn = True
@@ -121,13 +127,14 @@ for timeTicker in range(4000):
         if maxPlasma < max(agentPlasma): maxPlasma = max(agentPlasma)
         
         agentSymptom = Symptom(agentSymptom, agentPlasma, plasmaMax)
+        print(agentSymptom[:10], agentPlasma[:10].astype(int))
         
         gridStructure =[[[] for x in range(gridSize)] for y in range(gridSize)]
         flooredAgentPosition = np.floor(agentPosition)
-        for ix in range(populationSize):
-            rowIndex = flooredAgentPosition[ix][0].astype('int')
-            columnIndex = flooredAgentPosition[ix][1].astype('int')
-            gridStructure[rowIndex][columnIndex].append(ix)
+        for agentIndex in range(populationSize):
+            rowIndex = flooredAgentPosition[agentIndex][0].astype('int')
+            columnIndex = flooredAgentPosition[agentIndex][1].astype('int')
+            gridStructure[rowIndex][columnIndex].append(agentIndex)
             
 
         
