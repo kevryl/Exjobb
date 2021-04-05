@@ -77,7 +77,7 @@ startTime = time.time()
 # Variables in the model
 populationSize = 2000
 gridSize = int(np.sqrt(populationSize)/2)
-infectionProbability = 0.1
+infectionProbability = 0.05
 calculationTimer = 10
 vaccineProcent = 0.001
 vaccineDoses = int(np.ceil(vaccineProcent*populationSize))
@@ -128,6 +128,7 @@ for ix in range(populationSize):
     if ix < initialInfected:
         agentVirus[ix] = 1000
     if ix < initialImmune and ix > initialInfected:
+        agentPlasma[ix] = plasmaMax
         agentMcell[ix] = 45000
 
 # Simulation starts
