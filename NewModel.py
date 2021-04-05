@@ -75,7 +75,7 @@ def DiseaseSpeading(gridSize, gridStructure, virus, symptom):
 startTime = time.time()
 
 # Variables in the model
-populationSize = 5000
+populationSize = 2000
 gridSize = int(np.sqrt(populationSize)/2)
 infectionProbability = 0.1
 calculationTimer = 10
@@ -83,8 +83,8 @@ vaccineProcent = 0.001
 vaccineDoses = int(np.ceil(vaccineProcent*populationSize))
 plasmaMax = 9000
 populationPlot = [[],[],[]]
-initialInfected = 100
-initialImmune = 2000 
+initialInfected = populationSize/100
+initialImmune = populationSize/2 
 
 # Features to turn on and off
 plotOn = True
@@ -99,7 +99,7 @@ agentVirus = np.zeros(populationSize)
 agentPlasma = np.zeros(populationSize)
 agentMcell = np.zeros(populationSize)
 agentSymptom = np.zeros(populationSize)
-
+vaccinationList = list(range(populationSize))
 
 # Create parameters for the simulation
 parameters = []
@@ -128,10 +128,10 @@ for ix in range(populationSize):
     if ix < initialInfected:
         agentVirus[ix] = 1000
     if ix < initialImmune and ix > initialInfected:
-        agentPlasma[ix] = plasmaMax
+        agentMcell[ix] = 45000
 
 # Simulation starts
-for timeTicker in range(500000):
+for timeTicker in range(100000):
     agentMovement = np.transpose([np.cos(agentRotation), np.sin(agentRotation)]*agentSpeed)
     agentPosition = agentPosition + agentMovement
     
@@ -161,13 +161,26 @@ for timeTicker in range(500000):
 
         agentVirus = DiseaseSpeading(gridSize, gridStructure, agentVirus, agentSymptom)
         
+        
+        if vaccinationOn == True:
+            vaccineDoses = 0
+            removeIndex= []
+            for index, ix in enumerate(vaccinationList):
+                if vaccineDoses < 3:
+                    if all([agentVirus[ix] == 0, agentPlasma[ix] == 0]):
+                        agentMcell[ix] = agentMcell[ix] + 50000
+                        removeIndex.append(index)
+                        vaccineDoses = vaccineDoses + 1
+            vaccinationList = np.delete(vaccinationList,removeIndex)
+            vaccinationList.tolist()
+        
         totalSusepteble = 0
         totalInfected = 0
         totalImmune = 0
         for ix in range(populationSize):
-            if agentVirus[ix] != 0:
+            if agentVirus[ix] != 0 :
                 totalInfected = totalInfected +1
-            elif agentPlasma[ix] != 0:
+            elif all([agentVirus[ix] == 0, agentPlasma[ix] > 0]):
                 totalImmune = totalImmune + 1
             else: 
                 totalSusepteble = totalSusepteble + 1
@@ -180,13 +193,17 @@ for timeTicker in range(500000):
         populationPlot[2].append(totalImmune)
 
 if plotOn == True:
-    plotLength = range(len(populationPlot[0]))
     plt.figure()
-    plt.plot(plotLength, populationPlot[0], 'g', plotLength, populationPlot[1], 'r',
-             plotLength, populationPlot[2], 'b')
+    n = 10
+    susepteblePlot = [sum(populationPlot[0][i:i+n])//n for i in range(0,len(populationPlot[0]),n)]
+    infectedPlot = [sum(populationPlot[1][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]
+    immunePlot = [sum(populationPlot[2][i:i+n])//n for i in range(0,len(populationPlot[2]),n)]
+    plotLength = np.linspace(0,len(populationPlot[0]),len(susepteblePlot))
+    plt.plot(plotLength, susepteblePlot, 'g', plotLength, infectedPlot, 'r',
+             plotLength, immunePlot, 'b')
     plt.xlabel('Timecycles')
     plt.ylabel('Number of agents')
-    plt.legend(['susepteble', 'infected', 'immune'])
+    plt.legend(['susepteble', 'infected', 'symptomatic'])
     plt.show()
 
 
