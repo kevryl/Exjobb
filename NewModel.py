@@ -63,13 +63,6 @@ def DiseaseSpeading(gridSize, gridStructure, virus, symptom):
                         meetingProbability = 1/symptom[localInfectedIndex]
                         if r < infectionProbability*meetingProbability:
                             virus[localSuseptebleIndex] = virus[localSuseptebleIndex] + 100
-                
-                # tempGridSturcture = gridStructure[ix][jx].copy()
-                # for kx in range(len(gridStructure[ix][jx])):
-                #     agentIndex = gridStructure[ix][jx][kx]
-                #     tempGridSturcture.pop(0) # Remove the agentIndex from tempGridStucture
-                #     for otherAgentIndex in tempGridSturcture:
-                #         print(agentIndex, otherAgentIndex)
     return virus
 
 startTime = time.time()
@@ -77,7 +70,7 @@ startTime = time.time()
 # Variables in the model
 populationSize = 2000
 gridSize = int(np.sqrt(populationSize)/2)
-infectionProbability = 0.05
+infectionProbability = 0.01 
 calculationTimer = 10
 vaccineProcent = 0.001
 vaccineDoses = int(np.ceil(vaccineProcent*populationSize))
@@ -89,7 +82,7 @@ initialImmune = populationSize/2
 # Features to turn on and off
 plotOn = True
 deathOn = True
-vaccinationOn = True
+vaccinationOn = False
 
 # Set up for population
 agentPosition = np.ones([populationSize,2])
@@ -106,11 +99,11 @@ parameters = []
 parameterTimeChanger = 10
 a = np.ones(populationSize)*1/parameterTimeChanger #np.random.normal(2,0.2)
 b = np.ones(populationSize)*0.5/parameterTimeChanger
-c = np.ones(populationSize)*np.random.uniform(0.1,10,populationSize)/parameterTimeChanger # np.random.normal(1,0.1)
+c = np.ones(populationSize)*np.random.uniform(0.1,1,populationSize)/parameterTimeChanger # np.random.normal(1,0.1)
 d = np.ones(populationSize)*0.001/parameterTimeChanger
-e = np.ones(populationSize)*1/parameterTimeChanger
+e = np.ones(populationSize)*3/parameterTimeChanger
 f = np.ones(populationSize)*0.5/parameterTimeChanger
-g = np.ones(populationSize)*0.005/parameterTimeChanger
+g = np.ones(populationSize)*0.1/parameterTimeChanger
 parameters.append(a)
 parameters.append(b)
 parameters.append(c)
@@ -127,9 +120,9 @@ for ix in range(populationSize):
     agentRotation[ix] = np.random.uniform(-np.pi,np.pi)
     if ix < initialInfected:
         agentVirus[ix] = 1000
-    if ix < initialImmune and ix > initialInfected:
-        agentPlasma[ix] = plasmaMax
-        agentMcell[ix] = 45000
+    # if ix < initialImmune and ix > initialInfected:
+    #     agentPlasma[ix] = plasmaMax
+    #     agentMcell[ix] = 45000
 
 # Simulation starts
 for timeTicker in range(100000):
@@ -205,6 +198,7 @@ if plotOn == True:
     plt.xlabel('Timecycles')
     plt.ylabel('Number of agents')
     plt.legend(['susepteble', 'infected', 'symptomatic'])
+    plt.title(['a = '+str(a),'b = '+str(b),'c = '+str(c),'d = '+str(d),'e = '+str(e),'f = '+str(f),'g = '+str(g)])
     plt.show()
 
 
