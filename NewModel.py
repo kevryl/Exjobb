@@ -22,18 +22,18 @@ def Model(parameters, virus, plasma, mcell):
     virus = virus + dvdt
     plasma = plasma + dTdt
     mcell = mcell + dMdt
-    virus = np.where(virus > 1, virus, 0)
-    plasma = np.where(plasma > 1, plasma, 0)
+    virus = np.where(virus > 10, virus, 0)
+    plasma = np.where(plasma > 10, plasma, 0)
     mcell = np.where(mcell > 2, mcell, 2)
     return virus, plasma, mcell
 
 
 def Symptom(agentSymptom, plasma, plasmaMax):
-    agentSymptom = np.where(plasma < plasmaMax, agentSymptom, 4)
-    agentSymptom = np.where(plasma > plasmaMax, agentSymptom, 3)
-    agentSymptom = np.where(plasma > 2*plasmaMax/3, agentSymptom, 2)
-    agentSymptom = np.where(plasma > plasmaMax/3, agentSymptom,1)
-    agentSymptom = np.where(plasma != 0, agentSymptom, 0)
+    agentSymptom = np.zeros(len(agentSymptom))
+    agentSymptom = np.where(plasma < 1*plasmaMax/4, agentSymptom, 1)
+    agentSymptom = np.where(plasma < 2*plasmaMax/4, agentSymptom, 2)
+    agentSymptom = np.where(plasma < 3*plasmaMax/4, agentSymptom, 3)
+    agentSymptom = np.where(plasma < 4*plasmaMax/4, agentSymptom, 4)
     return agentSymptom
 
 
@@ -56,11 +56,10 @@ def DiseaseSpeading(gridSize, gridStructure, virus, symptom):
                         localInfected.append(agentIndex)
                     else:
                         localSusepteble.append(agentIndex)
-                
                 for localSuseptebleIndex in localSusepteble:
                     for localInfectedIndex in localInfected:
                         r = np.random.rand()
-                        meetingProbability = 1/symptom[localInfectedIndex]
+                        meetingProbability = np.power(1/2,symptom[localInfectedIndex])
                         if r < infectionProbability*meetingProbability:
                             virus[localSuseptebleIndex] = virus[localSuseptebleIndex] + 100
     return virus
@@ -68,19 +67,21 @@ def DiseaseSpeading(gridSize, gridStructure, virus, symptom):
 startTime = time.time()
 
 # Variables in the model
-populationSize = 2000
+populationSize = 5000
 gridSize = int(np.sqrt(populationSize)/2)
-infectionProbability = 0.01 
+infectionProbability = 0.01
 calculationTimer = 10
 vaccineProcent = 0.001
 vaccineDoses = int(np.ceil(vaccineProcent*populationSize))
-plasmaMax = 9000
+plasmaMax = 20000
 populationPlot = [[],[],[]]
-initialInfected = populationSize/100
+symptomPlot = []
+initialInfected = populationSize/50
 initialImmune = populationSize/2 
 
 # Features to turn on and off
 plotOn = True
+symptomPlotOn = True
 deathOn = True
 vaccinationOn = False
 
@@ -93,6 +94,10 @@ agentPlasma = np.zeros(populationSize)
 agentMcell = np.zeros(populationSize)
 agentSymptom = np.zeros(populationSize)
 vaccinationList = list(range(populationSize))
+if vaccinationOn == True:
+    agentVirusFake = np.zeros(populationSize)
+    agentPlasmaFake = np.zeros(populationSize)
+    agentMcellFake = np.zeros(populationSize)
 
 # Create parameters for the simulation
 parameters = []
@@ -160,11 +165,16 @@ for timeTicker in range(100000):
             vaccineDoses = 0
             removeIndex= []
             for index, ix in enumerate(vaccinationList):
-                if vaccineDoses < 3:
+                if vaccineDoses < 1:
                     if all([agentVirus[ix] == 0, agentPlasma[ix] == 0]):
-                        agentMcell[ix] = agentMcell[ix] + 50000
+                        agentVirusFake[ix] = 100 
                         removeIndex.append(index)
                         vaccineDoses = vaccineDoses + 1
+            agentVirusFake, agentPlasmaFake, agentMcellFake = Model(parameters, 
+                                                                    agentVirusFake, 
+                                                                    agentPlasmaFake, 
+                                                                    agentMcellFake)
+            agentMcell += agentMcellFake
             vaccinationList = np.delete(vaccinationList,removeIndex)
             vaccinationList.tolist()
         
@@ -185,22 +195,24 @@ for timeTicker in range(100000):
         populationPlot[0].append(totalSusepteble)
         populationPlot[1].append(totalInfected)
         populationPlot[2].append(totalImmune)
+        symptomPlot.append(np.sort(agentSymptom).tolist())
 
 if plotOn == True:
     plt.figure()
-    n = 10
+    n = 5
     susepteblePlot = [sum(populationPlot[0][i:i+n])//n for i in range(0,len(populationPlot[0]),n)]
     infectedPlot = [sum(populationPlot[1][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]
     immunePlot = [sum(populationPlot[2][i:i+n])//n for i in range(0,len(populationPlot[2]),n)]
     plotLength = np.linspace(0,len(populationPlot[0]),len(susepteblePlot))
-    plt.plot(plotLength, susepteblePlot, 'g', plotLength, infectedPlot, 'r',
-             plotLength, immunePlot, 'b')
+    plt.plot(plotLength[:-1], susepteblePlot[:-1], 'g', plotLength[:-1], infectedPlot[:-1], 'r',
+             plotLength[:-1], immunePlot[:-1], 'b')
     plt.xlabel('Timecycles')
     plt.ylabel('Number of agents')
     plt.legend(['susepteble', 'infected', 'symptomatic'])
-    plt.title(['a = '+str(a),'b = '+str(b),'c = '+str(c),'d = '+str(d),'e = '+str(e),'f = '+str(f),'g = '+str(g)])
     plt.show()
-
+    if symptomPlotOn == True:
+        fig, ax = plt.subplots()
+        im = ax.imshow(symptomPlot, cmap="YlGn")
 
 executionTime = (time.time() - startTime)
 print('Total execution time in seconds: ' + str(executionTime))
