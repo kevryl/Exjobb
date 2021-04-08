@@ -67,7 +67,7 @@ def DiseaseSpeading(gridSize, gridStructure, virus, symptom):
 startTime = time.time()
 
 # Variables in the model
-populationSize = 5000
+populationSize = 2000
 gridSize = int(np.sqrt(populationSize)/2)
 infectionProbability = 0.01
 calculationTimer = 10
@@ -81,9 +81,9 @@ initialImmune = populationSize/2
 
 # Features to turn on and off
 plotOn = True
-symptomPlotOn = True
+symptomPlotOn = False
 deathOn = True
-vaccinationOn = False
+vaccinationOn = True
 
 # Set up for population
 agentPosition = np.ones([populationSize,2])
@@ -125,9 +125,9 @@ for ix in range(populationSize):
     agentRotation[ix] = np.random.uniform(-np.pi,np.pi)
     if ix < initialInfected:
         agentVirus[ix] = 1000
-    # if ix < initialImmune and ix > initialInfected:
-    #     agentPlasma[ix] = plasmaMax
-    #     agentMcell[ix] = 45000
+    if ix < initialImmune and ix > initialInfected:
+        agentPlasma[ix] = plasmaMax
+        agentMcell[ix] = 45000
 
 # Simulation starts
 for timeTicker in range(100000):
@@ -165,7 +165,7 @@ for timeTicker in range(100000):
             vaccineDoses = 0
             removeIndex= []
             for index, ix in enumerate(vaccinationList):
-                if vaccineDoses < 1:
+                if vaccineDoses < 3:
                     if all([agentVirus[ix] == 0, agentPlasma[ix] == 0]):
                         agentVirusFake[ix] = 100 
                         removeIndex.append(index)
