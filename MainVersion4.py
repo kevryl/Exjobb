@@ -57,34 +57,34 @@ def Parameters():
     
 def PlotInitialImmuneSystem():
     Parameters()
-    modelConstants = CreateModelConstant()
-    singelConstants = [constants[0] for constants in modelConstants]
-    
+
     # Create the figure in the GUI
     figure = Figure(figsize=(5, 4), dpi=70)
     plot = figure.add_subplot(1, 1, 1)
     plot.set_xlabel("Timecycle")
     plot.set_ylabel("Cells")
+    lowerConstants = np.array([Parameters.aLower, Parameters.bLower, Parameters.cLower, Parameters.dLower, Parameters.eLower, Parameters.fLower, Parameters.gLower])/Parameters.modelTimeChanger
+    upperConstants = np.array([Parameters.aUpper, Parameters.bUpper, Parameters.cUpper, Parameters.dUpper, Parameters.eUpper, Parameters.fUpper, Parameters.gUpper])/Parameters.modelTimeChanger
+    for singelConstants in [lowerConstants, upperConstants]:
+        print(singelConstants)
+        virus = [Parameters.initialVirusCount]
+        plasma = [Parameters.initialPlasmaCount]
+        mcell = [Parameters.initialMcellCount]
+        
+        virusTemp = Parameters.initialVirusCount
+        plasmaTemp = 0
+        mcellTemp = 10
     
-    virus = [Parameters.initialVirusCount]
-    plasma = [Parameters.initialPlasmaCount]
-    mcell = [Parameters.initialMcellCount]
-    
-    virusTemp = Parameters.initialVirusCount
-    plasmaTemp = 0
-    mcellTemp = 10
-    
-    
-    for ix in range(Parameters.modelTimeTotal):
-        virusTemp, plasmaTemp, mcellTemp = Model(singelConstants, virusTemp, plasmaTemp, mcellTemp)
-        virus.append(virusTemp)
-        plasma.append(plasmaTemp)
-        mcell.append(mcellTemp)
-    plotRange = range(Parameters.modelTimeTotal+1)
-    
-    plot.plot(plotRange, virus, color="red", linestyle="-", label = "virus")
-    plot.plot(plotRange, plasma, color="blue", linestyle="-", label = "plasma")
-    plot.plot(plotRange, mcell, color="green", linestyle="-", label = "mcell")
+        for ix in range(Parameters.modelTimeTotal):
+            virusTemp, plasmaTemp, mcellTemp = Model(singelConstants, virusTemp, plasmaTemp, mcellTemp)
+            virus.append(virusTemp)
+            plasma.append(plasmaTemp)
+            mcell.append(mcellTemp)
+        plotRange = range(Parameters.modelTimeTotal+1)
+        
+        plot.plot(plotRange, virus, color="red", linestyle="-", label = "virus")
+        plot.plot(plotRange, plasma, color="blue", linestyle="-", label = "plasma")
+        plot.plot(plotRange, mcell, color="green", linestyle="-", label = "mcell")
     plot.legend()
     canvas = FigureCanvasTkAgg(figure, content)
     canvas.get_tk_widget().grid(row = 1, column = 8,columnspan = 4, rowspan = 10, padx = 10, pady = 10)
