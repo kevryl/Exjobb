@@ -197,7 +197,7 @@ def DiseaseSpeading(gridStructure, virus, symptom):
                         r = np.random.rand()
                         meetingProbability = np.power(1/2,symptom[localInfectedIndex])
                         if r < Parameters.infectionProbability*meetingProbability:
-                            virus[localSuseptebleIndex] = virus[localSuseptebleIndex] + 100
+                            virus[localSuseptebleIndex] = virus[localSuseptebleIndex] + virus[localInfectedIndex]*0.01
     return virus
 
 
@@ -211,7 +211,14 @@ def main():
     modelConstants = CreateModelConstant()
     
     populationPlot = [[],[],[],[]]
+    virusMeanPlot = []
     
+    if vaccinationOn.get() == True:
+        vaccinationList = list(range(Parameters.populationSize))
+        agentVirusFake = np.zeros(Parameters.populationSize)
+        agentPlasmaFake = np.zeros(Parameters.populationSize)
+        agentMcellFake = np.zeros(Parameters.populationSize)
+        
     for timeTicker in range(Parameters.simulationTime):
         agentMovement = np.transpose([np.cos(agentRotation), np.sin(agentRotation)]*agentSpeed)
         agentPosition = agentPosition + agentMovement
@@ -242,14 +249,28 @@ def main():
         
             agentVirus = DiseaseSpeading(gridStructure, agentVirus, agentSymptom)
             
+            if vaccinationOn.get() == True:
+                vaccineDoses = 0
+                removeIndex= []
+                for index, ix in enumerate(vaccinationList):
+                    if vaccineDoses < Parameters.totalVaccineDoses:
+                        if all([agentVirus[ix] == 0, agentPlasma[ix] == 0]):
+                            agentVirusFake[ix] = 100 
+                            removeIndex.append(index)
+                            vaccineDoses = vaccineDoses + 1
+                agentVirusFake, agentPlasmaFake, agentMcellFake = Model(modelConstants, 
+                                                                        agentVirusFake, 
+                                                                        agentPlasmaFake, 
+                                                                        agentMcellFake)
+                agentMcell += agentMcellFake
+                vaccinationList = np.delete(vaccinationList,removeIndex)
+                vaccinationList.tolist()
+                
             totalInfected = 0
             totalSymptomatic = 0
             totalImmune = 0
             totalSusepteble = 0
-            mcellMax = 0
             for ix in range(Parameters.populationSize):
-                if agentMcell[ix] > mcellMax:
-                    mcellMax = agentMcell[ix]
                 if agentVirus[ix] > 0 :
                     totalInfected += +1
                 elif all([agentVirus[ix] == 0, agentPlasma[ix] > 0]):
@@ -257,34 +278,37 @@ def main():
                 elif all([agentVirus[ix] == 0, agentPlasma[ix] == 0, agentMcell[ix] > 5000]): 
                     totalImmune +=  1
                 else:
-                    totalSusepteble += 1
-                    
+                    totalSusepteble += 1            
             if totalInfected == 0:
                 break
-        
-        
+            virusMeanPlot.append(np.mean(agentVirus))
+            
             populationPlot[0].append(totalInfected)
             populationPlot[1].append(totalSymptomatic)
             populationPlot[2].append(totalImmune)
             populationPlot[3].append(totalSusepteble)
-    
-    print(mcellMax)
-    plt.figure()
-    n = 5
-    
-    infectedPlot    = [sum(populationPlot[0][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]
-    symptomaticPlot = [sum(populationPlot[1][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]
-    immunePlot      = [sum(populationPlot[2][i:i+n])//n for i in range(0,len(populationPlot[2]),n)]
-    susepteblePlot  = [sum(populationPlot[3][i:i+n])//n for i in range(0,len(populationPlot[3]),n)]
-    plotLength = np.linspace(0,len(populationPlot[0]),len(susepteblePlot))
-    plt.plot(plotLength[:-1], infectedPlot[:-1], 'r')
-    plt.plot(plotLength[:-1], immunePlot[:-1], 'b')
-    plt.plot(plotLength[:-1], symptomaticPlot[:-1], 'orange')    
-    plt.plot(plotLength[:-1], susepteblePlot[:-1], 'g')
-    plt.xlabel('Timecycles')
-    plt.ylabel('Number of agents')
-    plt.legend(['infected', 'immune', 'symptomatic','susepteble'])
-    plt.show()
+
+    if virusMeanOn.get() == True:
+        plt.plot(virusMeanPlot)
+        plt.show()
+        
+    if plotOn.get() == True:    
+        plt.figure()
+        n = 5
+        infectedPlot    = [sum(populationPlot[0][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]
+        symptomaticPlot = [sum(populationPlot[1][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]
+        immunePlot      = [sum(populationPlot[2][i:i+n])//n for i in range(0,len(populationPlot[2]),n)]
+        susepteblePlot  = [sum(populationPlot[3][i:i+n])//n for i in range(0,len(populationPlot[3]),n)]
+        plotLength = np.linspace(0,len(populationPlot[0]),len(susepteblePlot))
+        plt.plot(plotLength[:-1], infectedPlot[:-1], 'r')
+        plt.plot(plotLength[:-1], immunePlot[:-1], 'b')
+        plt.plot(plotLength[:-1], symptomaticPlot[:-1], 'orange')    
+        plt.plot(plotLength[:-1], susepteblePlot[:-1], 'g')
+        plt.xlabel('Timecycles')
+        plt.ylabel('Number of agents')
+        plt.legend(['infected', 'immune', 'symptomatic','susepteble'])
+        plt.show()
+
     executionTime = (time.time() - startTime)
     print('Total execution time in seconds: ' + str(executionTime))
     print("Run done")
@@ -297,7 +321,8 @@ content = ttk.Frame(root, padding=(3,3,12,12))
 runButton = ttk.Button(content, text = "Run", command = main)
 runInitialImmuneSystemButton = ttk.Button(content, text = "Update immune system", command = PlotInitialImmuneSystem)
 
-parametersLabel = ttk.Label(content, text = "Parameters")
+parametersLabel = ttk.Label(content, text = "Parameters", font = 15)
+checkboxLabel = ttk.Label(content, text = "Features", font = 15)
 immuneParametersLabel = ttk.Label(content, text = "Immune parameters")
 populationSizeLabel = ttk.Label(content, text ="Population size")
 gridSizeSideLabel = ttk.Label(content, text = "Grid size side")
@@ -356,6 +381,13 @@ gUpperEntry = ttk.Entry(content, width = 8)
 gLowerEntry = ttk.Entry(content, width = 8)
 
 
+plotOn = BooleanVar(value=1)
+plotOnCheck = ttk.Checkbutton(content, text = "Agent condition plot", variable = plotOn)
+vaccinationOn = BooleanVar(value = 0)
+vaccinationCheck = ttk.Checkbutton(content, text = "Vaccination", variable = vaccinationOn)
+virusMeanOn = BooleanVar(value = 0)
+virusMeanCheck =  ttk.Checkbutton(content, text = "Virus mean plot", variable = virusMeanOn)
+
 # Insert default value
 populationSizeEntry.insert(0,5000)
 gridSizeSideEntry.insert(0,35)
@@ -364,7 +396,7 @@ infectionProbabilityEntry.insert(0,0.01)
 initialImmuneEntry.insert(0,1000)
 plasmaMaxEntry.insert(0,10000)
 totalVaccineDosesEntry.insert(0,5)
-simulationTimeEntry.insert(0,500000)
+simulationTimeEntry.insert(0,100000)
 calculationTimerEntry.insert(0,100)
 initialVirusCountEntry.insert(0,1000)
 initialPlasmaCountEntry.insert(0,10000)
@@ -384,8 +416,8 @@ eUpperEntry.insert(0,3)
 eLowerEntry.insert(0,3)
 fUpperEntry.insert(0,0.5)
 fLowerEntry.insert(0,0.5)
-gUpperEntry.insert(0,1)
-gLowerEntry.insert(0,1)
+gUpperEntry.insert(0,0.1)
+gLowerEntry.insert(0,0.1)
 
 
 # Grid
@@ -473,6 +505,18 @@ initialPlasmaCountEntry.grid(row = rowIndex, column = 1)
 rowIndex = 13
 initialMcellCountLabel.grid(row = rowIndex, column = 0)
 initialMcellCountEntry.grid(row = rowIndex, column = 1)
+
+rowIndex = 15
+checkboxLabel.grid(row = rowIndex, column = 0)
+
+rowIndex = 16
+plotOnCheck.grid(row = rowIndex, column = 0, sticky = W)
+
+rowIndex = 17
+vaccinationCheck.grid(row = rowIndex, column = 0, sticky = W)
+
+rowIndex = 18
+virusMeanCheck.grid(row = rowIndex, column = 0, sticky = W)
 
 # Keybindings
 root.bind('<Return>', lambda e: runButton.invoke())
