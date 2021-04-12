@@ -26,7 +26,7 @@ tcellPlot = [tcell]
 mcellPlot = [mcell]
 
 
-time = 100
+time = 1000
 for ix in range(time):
     dvdt = a*virus - b*tcell
     dTdt = virus*(c + d*mcell) - e*tcell
@@ -37,10 +37,10 @@ for ix in range(time):
     if virus < 10: virus = 0
     if tcell < 10: tcell = 0
     if mcell < 10: mcell = 0
-    if ix == 200:
+    if mcell < 5000:
         virus = virus + 500 
-    elif ix == 750:
-        virus = virus + 500
+    # elif ix == 750:
+    #     virus = virus + 500
     virusPlot.append(virus)
     tcellPlot.append(tcell)
     mcellPlot.append(mcell)

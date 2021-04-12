@@ -59,14 +59,16 @@ def PlotInitialImmuneSystem():
     Parameters()
 
     # Create the figure in the GUI
-    figure = Figure(figsize=(5, 4), dpi=70)
-    plot = figure.add_subplot(1, 1, 1)
-    plot.set_xlabel("Timecycle")
-    plot.set_ylabel("Cells")
+    figure = Figure(figsize=(10, 8), dpi=70)
+    plotAll = figure.add_subplot(2, 2, 1)
+    plotVirus = figure.add_subplot(2, 2, 2)
+    plotPlasma = figure.add_subplot(2, 2, 3)
+    plotMcell = figure.add_subplot(2, 2, 4)
+    plotAll.set_xlabel("Timecycle")
+    plotAll.set_ylabel("Cells")
     lowerConstants = np.array([Parameters.aLower, Parameters.bLower, Parameters.cLower, Parameters.dLower, Parameters.eLower, Parameters.fLower, Parameters.gLower])/Parameters.modelTimeChanger
     upperConstants = np.array([Parameters.aUpper, Parameters.bUpper, Parameters.cUpper, Parameters.dUpper, Parameters.eUpper, Parameters.fUpper, Parameters.gUpper])/Parameters.modelTimeChanger
-    for singelConstants in [lowerConstants, upperConstants]:
-        print(singelConstants)
+    for count, singleConstants in enumerate([lowerConstants, upperConstants]):
         virus = [Parameters.initialVirusCount]
         plasma = [Parameters.initialPlasmaCount]
         mcell = [Parameters.initialMcellCount]
@@ -76,18 +78,32 @@ def PlotInitialImmuneSystem():
         mcellTemp = 10
     
         for ix in range(Parameters.modelTimeTotal):
-            virusTemp, plasmaTemp, mcellTemp = Model(singelConstants, virusTemp, plasmaTemp, mcellTemp)
+            virusTemp, plasmaTemp, mcellTemp = Model(singleConstants, virusTemp, plasmaTemp, mcellTemp)
             virus.append(virusTemp)
             plasma.append(plasmaTemp)
             mcell.append(mcellTemp)
         plotRange = range(Parameters.modelTimeTotal+1)
         
-        plot.plot(plotRange, virus, color="red", linestyle="-", label = "virus")
-        plot.plot(plotRange, plasma, color="blue", linestyle="-", label = "plasma")
-        plot.plot(plotRange, mcell, color="green", linestyle="-", label = "mcell")
-    plot.legend()
+        if count == 0:
+            plotAll.plot(plotRange, virus, color="red", linestyle="--", label = "lower", alpha = 0.5)
+            plotAll.plot(plotRange, plasma, color="blue", linestyle="--", alpha = 0.5)
+            plotAll.plot(plotRange, mcell, color="green", linestyle="--", alpha = 0.5)
+            plotVirus.plot(plotRange, virus, color="red", linestyle="--", label = "virus, lower", alpha = 0.5)
+            plotPlasma.plot(plotRange, plasma, color="blue", linestyle="--", label = "plasma, lower", alpha = 0.5)
+            plotMcell.plot(plotRange, mcell, color="green", linestyle="--", label = "mcell, lower",alpha = 0.5)
+        else: 
+            plotAll.plot(plotRange, virus, color="red", linestyle="-", label = "upper")
+            plotAll.plot(plotRange, plasma, color="blue", linestyle="-")
+            plotAll.plot(plotRange, mcell, color="green", linestyle="-")
+            plotVirus.plot(plotRange, virus, color="red", linestyle="-", label = "virus, upper")
+            plotPlasma.plot(plotRange, plasma, color="blue", linestyle="-", label = "plasma, upper")
+            plotMcell.plot(plotRange, mcell, color="green", linestyle="-", label = "mcell, upper") #"f = {:f}".format(singleConstants[5]) 
+    for plot in [plotAll,plotVirus,plotPlasma, plotMcell]:
+        plot.legend()
+        plot.grid()
+        plot.set_yscale('log')
     canvas = FigureCanvasTkAgg(figure, content)
-    canvas.get_tk_widget().grid(row = 1, column = 8,columnspan = 4, rowspan = 10, padx = 10, pady = 10)
+    canvas.get_tk_widget().grid(row = 1, column = 8,columnspan = 40, rowspan = 100, padx = 10, pady = 10)
    
 
 
@@ -194,7 +210,7 @@ def main():
     agentPosition, agentSpeed, agentRotation, agentVirus, agentPlasma, agentMcell, agentSymptom, vaccinationList = CreatePopulation()
     modelConstants = CreateModelConstant()
     
-    populationPlot = [[],[],[]]
+    populationPlot = [[],[],[],[]]
     
     for timeTicker in range(Parameters.simulationTime):
         agentMovement = np.transpose([np.cos(agentRotation), np.sin(agentRotation)]*agentSpeed)
@@ -226,37 +242,49 @@ def main():
         
             agentVirus = DiseaseSpeading(gridStructure, agentVirus, agentSymptom)
             
-            totalSusepteble = 0
             totalInfected = 0
+            totalSymptomatic = 0
             totalImmune = 0
+            totalSusepteble = 0
+            mcellMax = 0
             for ix in range(Parameters.populationSize):
-                if agentVirus[ix] != 0 :
-                    totalInfected = totalInfected +1
+                if agentMcell[ix] > mcellMax:
+                    mcellMax = agentMcell[ix]
+                if agentVirus[ix] > 0 :
+                    totalInfected += +1
                 elif all([agentVirus[ix] == 0, agentPlasma[ix] > 0]):
-                    totalImmune = totalImmune + 1
-                else: 
-                    totalSusepteble = totalSusepteble + 1
+                    totalSymptomatic +=  1
+                elif all([agentVirus[ix] == 0, agentPlasma[ix] == 0, agentMcell[ix] > 5000]): 
+                    totalImmune +=  1
+                else:
+                    totalSusepteble += 1
                     
             if totalInfected == 0:
                 break
         
-            populationPlot[0].append(totalSusepteble)
-            populationPlot[1].append(totalInfected)
+        
+            populationPlot[0].append(totalInfected)
+            populationPlot[1].append(totalSymptomatic)
             populationPlot[2].append(totalImmune)
-            
+            populationPlot[3].append(totalSusepteble)
+    
+    print(mcellMax)
     plt.figure()
     n = 5
-    susepteblePlot = [sum(populationPlot[0][i:i+n])//n for i in range(0,len(populationPlot[0]),n)]
-    infectedPlot = [sum(populationPlot[1][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]
-    immunePlot = [sum(populationPlot[2][i:i+n])//n for i in range(0,len(populationPlot[2]),n)]
+    
+    infectedPlot    = [sum(populationPlot[0][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]
+    symptomaticPlot = [sum(populationPlot[1][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]
+    immunePlot      = [sum(populationPlot[2][i:i+n])//n for i in range(0,len(populationPlot[2]),n)]
+    susepteblePlot  = [sum(populationPlot[3][i:i+n])//n for i in range(0,len(populationPlot[3]),n)]
     plotLength = np.linspace(0,len(populationPlot[0]),len(susepteblePlot))
-    plt.plot(plotLength[:-1], susepteblePlot[:-1], 'g', plotLength[:-1], infectedPlot[:-1], 'r',
-             plotLength[:-1], immunePlot[:-1], 'b')
+    plt.plot(plotLength[:-1], infectedPlot[:-1], 'r')
+    plt.plot(plotLength[:-1], immunePlot[:-1], 'b')
+    plt.plot(plotLength[:-1], symptomaticPlot[:-1], 'orange')    
+    plt.plot(plotLength[:-1], susepteblePlot[:-1], 'g')
     plt.xlabel('Timecycles')
     plt.ylabel('Number of agents')
-    plt.legend(['susepteble', 'infected', 'symptomatic'])
+    plt.legend(['infected', 'immune', 'symptomatic','susepteble'])
     plt.show()
-
     executionTime = (time.time() - startTime)
     print('Total execution time in seconds: ' + str(executionTime))
     print("Run done")
@@ -336,7 +364,7 @@ infectionProbabilityEntry.insert(0,0.01)
 initialImmuneEntry.insert(0,1000)
 plasmaMaxEntry.insert(0,10000)
 totalVaccineDosesEntry.insert(0,5)
-simulationTimeEntry.insert(0,5000)
+simulationTimeEntry.insert(0,500000)
 calculationTimerEntry.insert(0,100)
 initialVirusCountEntry.insert(0,1000)
 initialPlasmaCountEntry.insert(0,10000)
