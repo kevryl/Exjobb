@@ -23,7 +23,6 @@ def Parameters():
     Parameters.initialInfected = int(initialInfectedEntry.get())
     Parameters.infectionProbability = float(infectionProbabilityEntry.get())
     Parameters.initialImmune = int(initialImmuneEntry.get())
-    Parameters.plasmaMax = int(plasmaMaxEntry.get())
     Parameters.totalVaccineDoses = int(totalVaccineDosesEntry.get())
     Parameters.simulationTime = int(simulationTimeEntry.get())
     Parameters.calculationTimer = int(calculationTimerEntry.get())
@@ -54,6 +53,10 @@ def Parameters():
     Parameters.gUpper = float(gUpperEntry.get())
     Parameters.gLower = float(gLowerEntry.get())
     
+    Parameters.symptomOne = int(symptomOneEntry.get())
+    Parameters.symptomTwo = int(symptomTwoEntry.get())
+    Parameters.symptomThree = int(symptomThreeEntry.get())
+    Parameters.symptomFour = int(symptomFourEntry.get())
     
 def PlotInitialImmuneSystem():
     Parameters()
@@ -98,6 +101,17 @@ def PlotInitialImmuneSystem():
             plotVirus.plot(plotRange, virus, color="red", linestyle="-", label = "virus, upper")
             plotPlasma.plot(plotRange, plasma, color="blue", linestyle="-", label = "plasma, upper")
             plotMcell.plot(plotRange, mcell, color="green", linestyle="-", label = "mcell, upper") #"f = {:f}".format(singleConstants[5]) 
+    plotPlasma.plot([0,Parameters.modelTimeTotal+1],[Parameters.symptomOne,Parameters.symptomOne], color="black", linestyle="--", label = "Symptom")
+    plotPlasma.plot([0,Parameters.modelTimeTotal+1],[Parameters.symptomTwo,Parameters.symptomTwo], color="black", linestyle="--")
+    plotPlasma.plot([0,Parameters.modelTimeTotal+1],[Parameters.symptomThree,Parameters.symptomThree], color="black", linestyle="--")
+    plotPlasma.plot([0,Parameters.modelTimeTotal+1],[Parameters.symptomFour,Parameters.symptomFour], color="black", linestyle="--")
+    plotPlasma.text(Parameters.modelTimeTotal,Parameters.symptomOne, "1")
+    plotPlasma.text(0,Parameters.symptomTwo, "2")
+    plotPlasma.text(Parameters.modelTimeTotal,Parameters.symptomThree, "3")
+    plotPlasma.text(0,Parameters.symptomFour, "4")
+
+
+    
     for plot in [plotAll,plotVirus,plotPlasma, plotMcell]:
         plot.legend()
         plot.grid()
@@ -171,12 +185,13 @@ def Model(parameters, virus, plasma, mcell):
     return virus, plasma, mcell
 
 
-def Symptom(agentSymptom, plasma, plasmaMax):
+def Symptom(agentSymptom, plasma):
+    Parameters()
     agentSymptom = np.zeros(len(agentSymptom))
-    agentSymptom = np.where(plasma < 1*plasmaMax/4, agentSymptom, 1)
-    agentSymptom = np.where(plasma < 2*plasmaMax/4, agentSymptom, 2)
-    agentSymptom = np.where(plasma < 3*plasmaMax/4, agentSymptom, 3)
-    agentSymptom = np.where(plasma < 4*plasmaMax/4, agentSymptom, 4)
+    agentSymptom = np.where(plasma < Parameters.symptomOne, agentSymptom, 1)
+    agentSymptom = np.where(plasma < Parameters.symptomTwo, agentSymptom, 2)
+    agentSymptom = np.where(plasma < Parameters.symptomThree, agentSymptom, 3)
+    agentSymptom = np.where(plasma < Parameters.symptomFour, agentSymptom, 4)
     return agentSymptom
 
 
@@ -219,7 +234,7 @@ def main():
         agentPlasmaFake = np.zeros(Parameters.populationSize)
         agentMcellFake = np.zeros(Parameters.populationSize)
         
-    for timeTicker in range(Parameters.simulationTime):
+    for timeTicker in range(Parameters.simulationTime*Parameters.calculationTimer):
         agentMovement = np.transpose([np.cos(agentRotation), np.sin(agentRotation)]*agentSpeed)
         agentPosition = agentPosition + agentMovement
         
@@ -237,8 +252,7 @@ def main():
                                                         agentPlasma, 
                                                         agentMcell)
             
-            agentSymptom = Symptom(agentSymptom, agentPlasma, Parameters.plasmaMax)
-            
+            agentSymptom = Symptom(agentSymptom, agentPlasma)
             
             gridStructure =[[[] for x in range(Parameters.gridSizeSide)] for y in range(Parameters.gridSizeSide)]
             flooredAgentPosition = np.floor(agentPosition)
@@ -308,7 +322,10 @@ def main():
         plt.ylabel('Number of agents')
         plt.legend(['infected', 'immune', 'symptomatic','susepteble'])
         plt.show()
-
+        
+        plt.hist(agentSymptom)
+        plt.show()
+        
     executionTime = (time.time() - startTime)
     print('Total execution time in seconds: ' + str(executionTime))
     print("Run done")
@@ -329,7 +346,6 @@ gridSizeSideLabel = ttk.Label(content, text = "Grid size side")
 initialInfectedLabel = ttk.Label(content, text = "Initial Infected")
 infectionProbabilityLabel = ttk.Label(content, text = "Infection probability")
 initialImmuneLabel = ttk.Label(content, text = "Initial Immune")
-plasmaMaxLabel = ttk.Label(content, text = "Plasma max")
 totalVaccineDosesLabel = ttk.Label(content, text = "Total vaccine doses per CT")
 simulationTimeLabel = ttk.Label(content, text = "Simulation time")
 calculationTimerLabel = ttk.Label(content, text = "Calculation timew")
@@ -348,6 +364,10 @@ dLabel = ttk.Label(content, text = "d")
 eLabel = ttk.Label(content, text = "e")
 fLabel = ttk.Label(content, text = "f")
 gLabel = ttk.Label(content, text = "g")
+symptomOneLabel = ttk.Label(content, text = "Symptom 1")
+symptomTwoLabel = ttk.Label(content, text = "Symptom 2")
+symptomThreeLabel = ttk.Label(content, text = "Symptom 3")
+symptomFourLabel = ttk.Label(content, text = "Symptom 4")
 
 
 populationSizeEntry = ttk.Entry(content, width = 8)
@@ -355,7 +375,6 @@ gridSizeSideEntry = ttk.Entry(content, width = 8)
 initialInfectedEntry = ttk.Entry(content, width = 8)
 infectionProbabilityEntry = ttk.Entry(content, width = 8)
 initialImmuneEntry = ttk.Entry(content, width = 8)
-plasmaMaxEntry = ttk.Entry(content, width = 8)
 totalVaccineDosesEntry = ttk.Entry(content, width = 8)
 initialVirusCountEntry = ttk.Entry(content, width = 8)
 initialPlasmaCountEntry = ttk.Entry(content, width = 8)
@@ -379,7 +398,10 @@ fUpperEntry = ttk.Entry(content, width = 8)
 fLowerEntry = ttk.Entry(content, width = 8)
 gUpperEntry = ttk.Entry(content, width = 8)
 gLowerEntry = ttk.Entry(content, width = 8)
-
+symptomOneEntry = ttk.Entry(content, width = 8)
+symptomTwoEntry = ttk.Entry(content, width = 8)
+symptomThreeEntry = ttk.Entry(content, width = 8)
+symptomFourEntry = ttk.Entry(content, width = 8)
 
 plotOn = BooleanVar(value=1)
 plotOnCheck = ttk.Checkbutton(content, text = "Agent condition plot", variable = plotOn)
@@ -394,7 +416,7 @@ gridSizeSideEntry.insert(0,35)
 initialInfectedEntry.insert(0,50)
 infectionProbabilityEntry.insert(0,0.01)
 initialImmuneEntry.insert(0,1000)
-plasmaMaxEntry.insert(0,10000)
+
 totalVaccineDosesEntry.insert(0,5)
 simulationTimeEntry.insert(0,100000)
 calculationTimerEntry.insert(0,100)
@@ -418,6 +440,10 @@ fUpperEntry.insert(0,0.5)
 fLowerEntry.insert(0,0.5)
 gUpperEntry.insert(0,0.1)
 gLowerEntry.insert(0,0.1)
+symptomOneEntry.insert(0,100000)
+symptomTwoEntry.insert(0,200000)
+symptomThreeEntry.insert(0,300000)
+symptomFourEntry.insert(0,350000)
 
 
 # Grid
@@ -433,89 +459,94 @@ immuneParametersLabel.grid(row = rowIndex, column = 2)
 lowerParameterLabel.grid(row = rowIndex, column = 3)
 upperParameterLabel.grid(row = rowIndex, column = 4)
 
-rowIndex = 2
+rowIndex += 1
 populationSizeLabel.grid(row = rowIndex, column = 0)
 populationSizeEntry.grid(row = rowIndex, column = 1)
 aLabel.grid(row = rowIndex, column = 2)
 aLowerEntry.grid(row = rowIndex, column = 3)
 aUpperEntry.grid(row = rowIndex, column = 4)
 
-rowIndex = 3
+rowIndex += 1
 gridSizeSideLabel.grid(row = rowIndex, column = 0)
 gridSizeSideEntry.grid(row = rowIndex, column = 1)
 bLabel.grid(row = rowIndex, column = 2)
 bLowerEntry.grid(row = rowIndex, column = 3)
 bUpperEntry.grid(row = rowIndex, column = 4)
 
-rowIndex = 4
+rowIndex += 1
 initialInfectedLabel.grid(row = rowIndex, column = 0)
 initialInfectedEntry.grid(row = rowIndex, column = 1)
 cLabel.grid(row = rowIndex, column = 2)
 cLowerEntry.grid(row = rowIndex, column = 3)
 cUpperEntry.grid(row = rowIndex, column = 4)
 
-rowIndex = 5
+rowIndex += 1
 infectionProbabilityLabel.grid(row = rowIndex, column = 0)
 infectionProbabilityEntry.grid(row = rowIndex, column = 1)
 dLabel.grid(row = rowIndex, column = 2)
 dLowerEntry.grid(row = rowIndex, column = 3)
 dUpperEntry.grid(row = rowIndex, column = 4)
 
-rowIndex = 6
+rowIndex += 1
 initialImmuneLabel.grid(row = rowIndex, column = 0)
 initialImmuneEntry.grid(row = rowIndex, column = 1)
 eLabel.grid(row = rowIndex, column = 2)
 eLowerEntry.grid(row = rowIndex, column = 3)
 eUpperEntry.grid(row = rowIndex, column = 4)
 
-rowIndex = 7
-plasmaMaxLabel.grid(row = rowIndex, column = 0)
-plasmaMaxEntry.grid(row = rowIndex, column = 1)
+rowIndex += 1
+totalVaccineDosesLabel.grid(row = rowIndex, column = 0)
+totalVaccineDosesEntry.grid(row = rowIndex, column = 1)
 fLabel.grid(row = rowIndex, column = 2)
 fLowerEntry.grid(row = rowIndex, column = 3)
 fUpperEntry.grid(row = rowIndex, column = 4)
 
-rowIndex = 8
-totalVaccineDosesLabel.grid(row = rowIndex, column = 0)
-totalVaccineDosesEntry.grid(row = rowIndex, column = 1)
+rowIndex += 1
+simulationTimeLabel.grid(row = rowIndex, column = 0)
+simulationTimeEntry.grid(row = rowIndex, column = 1)
 gLabel.grid(row = rowIndex, column = 2)
 gLowerEntry.grid(row = rowIndex, column = 3)
 gUpperEntry.grid(row = rowIndex, column = 4)
 
 
-rowIndex = 9
-simulationTimeLabel.grid(row = rowIndex, column = 0)
-simulationTimeEntry.grid(row = rowIndex, column = 1)
+rowIndex += 1
+calculationTimerLabel.grid(row = rowIndex, column = 0)
+calculationTimerEntry.grid(row = rowIndex, column = 1)
 modelTimeTotalLabel.grid(row = rowIndex, column = 2)
 modelTimeTotalEntry.grid(row = rowIndex, column = 3)
 
 
-rowIndex = 10
-calculationTimerLabel.grid(row = rowIndex, column = 0)
-calculationTimerEntry.grid(row = rowIndex, column = 1)
-
-rowIndex = 11
+rowIndex += 1
 initialVirusCountLabel.grid(row = rowIndex, column = 0)
 initialVirusCountEntry.grid(row = rowIndex, column = 1)
+symptomOneLabel.grid(row = rowIndex, column = 2)
+symptomOneEntry.grid(row = rowIndex, column = 3)
 
-rowIndex = 12
+rowIndex += 1
 initialPlasmaCountLabel.grid(row = rowIndex, column = 0)
 initialPlasmaCountEntry.grid(row = rowIndex, column = 1)
+symptomTwoLabel.grid(row = rowIndex, column = 2)
+symptomTwoEntry.grid(row = rowIndex, column = 3)
 
-rowIndex = 13
+rowIndex += 1
 initialMcellCountLabel.grid(row = rowIndex, column = 0)
 initialMcellCountEntry.grid(row = rowIndex, column = 1)
+symptomThreeLabel.grid(row = rowIndex, column = 2)
+symptomThreeEntry.grid(row = rowIndex, column = 3)
 
-rowIndex = 15
+
+rowIndex += 1
 checkboxLabel.grid(row = rowIndex, column = 0)
+symptomFourLabel.grid(row = rowIndex, column = 2)
+symptomFourEntry.grid(row = rowIndex, column = 3)
 
-rowIndex = 16
+rowIndex += 1
 plotOnCheck.grid(row = rowIndex, column = 0, sticky = W)
 
-rowIndex = 17
+rowIndex += 1
 vaccinationCheck.grid(row = rowIndex, column = 0, sticky = W)
 
-rowIndex = 18
+rowIndex += 1
 virusMeanCheck.grid(row = rowIndex, column = 0, sticky = W)
 
 # Keybindings
