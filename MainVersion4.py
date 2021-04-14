@@ -230,6 +230,9 @@ def main():
         agentVirusFake = np.zeros(Parameters.populationSize)
         agentPlasmaFake = np.zeros(Parameters.populationSize)
         agentMcellFake = np.zeros(Parameters.populationSize)
+    
+    if symptomPlotOn.get() == True:
+        symptomPlot = []
         
     for timeTicker in range(Parameters.simulationTime*Parameters.calculationTimer):
         agentMovement = np.transpose([np.cos(agentRotation), np.sin(agentRotation)]*agentSpeed)
@@ -284,7 +287,7 @@ def main():
             for ix in range(Parameters.populationSize):
                 if agentVirus[ix] > 0 :
                     totalInfected += +1
-                elif all([agentVirus[ix] == 0, agentPlasma[ix] > 0]):
+                elif all([agentVirus[ix] == 0, agentPlasma[ix] > Parameters.symptomOne]):
                     totalSymptomatic +=  1
                 elif all([agentVirus[ix] == 0, agentPlasma[ix] == 0, agentMcell[ix] > 5000]): 
                     totalImmune +=  1
@@ -298,6 +301,8 @@ def main():
             populationPlot[1].append(totalSymptomatic)
             populationPlot[2].append(totalImmune)
             populationPlot[3].append(totalSusepteble)
+            if symptomPlotOn.get() == True:
+                symptomPlot.append(np.sort(agentSymptom).tolist())
 
     if virusMeanOn.get() == True:
         plt.plot(virusMeanPlot)
@@ -319,9 +324,12 @@ def main():
         plt.ylabel('Number of agents')
         plt.legend(['infected', 'immune', 'symptomatic','susepteble'])
         plt.show()
-        
-        plt.hist(agentSymptom)
+    
+    if symptomPlotOn.get() == True:
+        fig, ax = plt.subplots()
+        im = ax.imshow(symptomPlot, cmap="YlGn")
         plt.show()
+
         
     executionTime = (time.time() - startTime)
     print('Total execution time in seconds: ' + str(executionTime))
@@ -406,12 +414,15 @@ vaccinationOn = BooleanVar(value = 0)
 vaccinationCheck = ttk.Checkbutton(content, text = "Vaccination", variable = vaccinationOn)
 virusMeanOn = BooleanVar(value = 0)
 virusMeanCheck =  ttk.Checkbutton(content, text = "Virus mean plot", variable = virusMeanOn)
+symptomPlotOn = BooleanVar(value = 0)
+symptomPlotCheck = ttk.Checkbutton(content, text = "Symptom plot", variable = symptomPlotOn)
+
 
 # Insert default value
 populationSizeEntry.insert(0,5000)
 gridSizeSideEntry.insert(0,35)
 initialInfectedEntry.insert(0,50)
-infectionProbabilityEntry.insert(0,0.01)
+infectionProbabilityEntry.insert(0,0.02)
 initialImmuneEntry.insert(0,1000)
 
 totalVaccineDosesEntry.insert(0,5)
@@ -424,10 +435,10 @@ initialMcellCountEntry.insert(0,45000)
 modelTimeChangerEntry.insert(0,10)
 modelTimeTotalEntry.insert(0,100)
 aUpperEntry.insert(0,1)
-aLowerEntry.insert(0,1)
+aLowerEntry.insert(0,2)
 bUpperEntry.insert(0,0.5)
 bLowerEntry.insert(0,0.5)
-cUpperEntry.insert(0,10)
+cUpperEntry.insert(0,0.1)
 cLowerEntry.insert(0,0.1)
 dUpperEntry.insert(0,0.001)
 dLowerEntry.insert(0,0.001)
@@ -437,10 +448,10 @@ fUpperEntry.insert(0,0.5)
 fLowerEntry.insert(0,0.5)
 gUpperEntry.insert(0,0.1)
 gLowerEntry.insert(0,0.1)
-symptomOneEntry.insert(0,10000)
-symptomTwoEntry.insert(0,40000)
-symptomThreeEntry.insert(0,100000)
-symptomFourEntry.insert(0,350000)
+symptomOneEntry.insert(0,100)
+symptomTwoEntry.insert(0,1000)
+symptomThreeEntry.insert(0,10000)
+symptomFourEntry.insert(0,100000)
 
 
 # Grid
@@ -545,6 +556,10 @@ vaccinationCheck.grid(row = rowIndex, column = 0, sticky = W)
 
 rowIndex += 1
 virusMeanCheck.grid(row = rowIndex, column = 0, sticky = W)
+
+rowIndex += 1
+symptomPlotCheck.grid(row = rowIndex, column = 0, sticky = W)
+
 
 # Keybindings
 root.bind('<Return>', lambda e: runButton.invoke())
