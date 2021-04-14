@@ -109,9 +109,6 @@ def PlotInitialImmuneSystem():
     plotPlasma.text(0,Parameters.symptomTwo, "2")
     plotPlasma.text(Parameters.modelTimeTotal,Parameters.symptomThree, "3")
     plotPlasma.text(0,Parameters.symptomFour, "4")
-
-
-    
     for plot in [plotAll,plotVirus,plotPlasma, plotMcell]:
         plot.legend()
         plot.grid()
@@ -418,7 +415,7 @@ infectionProbabilityEntry.insert(0,0.01)
 initialImmuneEntry.insert(0,1000)
 
 totalVaccineDosesEntry.insert(0,5)
-simulationTimeEntry.insert(0,100000)
+simulationTimeEntry.insert(0,1000)
 calculationTimerEntry.insert(0,100)
 initialVirusCountEntry.insert(0,1000)
 initialPlasmaCountEntry.insert(0,10000)
@@ -430,7 +427,7 @@ aUpperEntry.insert(0,1)
 aLowerEntry.insert(0,1)
 bUpperEntry.insert(0,0.5)
 bLowerEntry.insert(0,0.5)
-cUpperEntry.insert(0,1)
+cUpperEntry.insert(0,10)
 cLowerEntry.insert(0,0.1)
 dUpperEntry.insert(0,0.001)
 dLowerEntry.insert(0,0.001)
@@ -440,9 +437,9 @@ fUpperEntry.insert(0,0.5)
 fLowerEntry.insert(0,0.5)
 gUpperEntry.insert(0,0.1)
 gLowerEntry.insert(0,0.1)
-symptomOneEntry.insert(0,100000)
-symptomTwoEntry.insert(0,200000)
-symptomThreeEntry.insert(0,300000)
+symptomOneEntry.insert(0,10000)
+symptomTwoEntry.insert(0,40000)
+symptomThreeEntry.insert(0,100000)
 symptomFourEntry.insert(0,350000)
 
 
