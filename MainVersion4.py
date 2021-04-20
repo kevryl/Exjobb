@@ -212,6 +212,25 @@ def DiseaseSpeading(gridStructure, virus, symptom):
                             virus[localSuseptebleIndex] = virus[localSuseptebleIndex] + virus[localInfectedIndex]*0.01
     return virus
 
+def DiseaseSpeadingQuarantine(gridStructure, virus, symptom):
+    Parameters()
+    for ix in range(Parameters.gridSizeSide):
+        for jx in range(Parameters.gridSizeSide):
+            if gridStructure[ix][jx] != [] and len(gridStructure[ix][jx]) != 1:
+                localInfected = []
+                localSusepteble = []
+                for agentIndex in gridStructure[ix][jx]:
+                    if virus[agentIndex] != 0:
+                        localInfected.append(agentIndex)
+                    else:
+                        localSusepteble.append(agentIndex)
+                for localSuseptebleIndex in localSusepteble:
+                    for localInfectedIndex in localInfected:
+                        r = np.random.rand()
+                        meetingProbability = np.power(1/2,symptom[localInfectedIndex])/100
+                        if r < Parameters.infectionProbability*meetingProbability:
+                            virus[localSuseptebleIndex] = virus[localSuseptebleIndex] + virus[localInfectedIndex]*0.01
+    return virus
 
 def main():
     print("")
@@ -230,10 +249,20 @@ def main():
         agentVirusFake = np.zeros(Parameters.populationSize)
         agentPlasmaFake = np.zeros(Parameters.populationSize)
         agentMcellFake = np.zeros(Parameters.populationSize)
-    
+        modelConstantsVaccine = CreateModelConstant()
+        modelConstantsVaccine[5] = modelConstantsVaccine[5]/10
+
+
+    if quarantineOn.get() == True:
+        startQuarantine = False
+        quarantineTime = 0
+        totalInfected = 0
+        
+        
     if symptomPlotOn.get() == True:
         symptomPlot = []
-        
+
+    ##### SIMULAION START #####        
     for timeTicker in range(Parameters.simulationTime*Parameters.calculationTimer):
         agentMovement = np.transpose([np.cos(agentRotation), np.sin(agentRotation)]*agentSpeed)
         agentPosition = agentPosition + agentMovement
@@ -260,8 +289,19 @@ def main():
                 rowIndex = flooredAgentPosition[agentIndex][0].astype('int')
                 columnIndex = flooredAgentPosition[agentIndex][1].astype('int')
                 gridStructure[rowIndex][columnIndex].append(agentIndex)
-        
-            agentVirus = DiseaseSpeading(gridStructure, agentVirus, agentSymptom)
+            
+            if quarantineOn.get() == True:
+                if totalInfected/Parameters.populationSize > 0.3:
+                    startQuarantine = True
+                if quarantineTime > 360:
+                    startQuarantine = False
+                if startQuarantine == True:
+                    agentVirus = DiseaseSpeadingQuarantine(gridStructure, agentVirus, agentSymptom)
+                    quarantineTime += 1
+                else:
+                    agentVirus = DiseaseSpeading(gridStructure, agentVirus, agentSymptom)
+            else:
+                agentVirus = DiseaseSpeading(gridStructure, agentVirus, agentSymptom)
             
             if vaccinationOn.get() == True:
                 vaccineDoses = 0
@@ -272,7 +312,7 @@ def main():
                             agentVirusFake[ix] = 100 
                             removeIndex.append(index)
                             vaccineDoses = vaccineDoses + 1
-                agentVirusFake, agentPlasmaFake, agentMcellFake = Model(modelConstants, 
+                agentVirusFake, agentPlasmaFake, agentMcellFake = Model(modelConstantsVaccine, 
                                                                         agentVirusFake, 
                                                                         agentPlasmaFake, 
                                                                         agentMcellFake)
@@ -316,13 +356,17 @@ def main():
         immunePlot      = [sum(populationPlot[2][i:i+n])//n for i in range(0,len(populationPlot[2]),n)]
         susepteblePlot  = [sum(populationPlot[3][i:i+n])//n for i in range(0,len(populationPlot[3]),n)]
         plotLength = np.linspace(0,len(populationPlot[0]),len(susepteblePlot))
-        plt.plot(plotLength[:-1], infectedPlot[:-1], 'r')
-        plt.plot(plotLength[:-1], immunePlot[:-1], 'b')
-        plt.plot(plotLength[:-1], symptomaticPlot[:-1], 'orange')    
-        plt.plot(plotLength[:-1], susepteblePlot[:-1], 'g')
-        plt.xlabel('Timecycles')
-        plt.ylabel('Number of agents')
-        plt.legend(['infected', 'immune', 'symptomatic','susepteble'])
+        plt.plot(plotLength[:-1], infectedPlot[:-1], 'r', label = 'infected')
+        plt.plot(plotLength[:-1], immunePlot[:-1], 'b', label = 'symptomatic')
+        plt.plot(plotLength[:-1], symptomaticPlot[:-1], 'orange', label = 'immune')    
+        plt.plot(plotLength[:-1], susepteblePlot[:-1], 'g', label = 'susepteble')
+        plt.xlabel('Timecycles', fontsize=12)
+        plt.ylabel('Number of agents', fontsize=12)
+        plt.legend()
+        modelConstantsTextLower = 'Lower: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.3f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aLower, Parameters.bLower, Parameters.cLower, Parameters.dLower, Parameters.eLower, Parameters.fLower, Parameters.gLower)
+        plt.figtext(0.5, -0.05, modelConstantsTextLower, ha="center", fontsize=12) 
+        modelConstantsTextUpper = 'Upper: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.3f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aUpper, Parameters.bLower, Parameters.cUpper, Parameters.dUpper, Parameters.eUpper, Parameters.fUpper, Parameters.gUpper)
+        plt.figtext(0.5, -0.10, modelConstantsTextUpper, ha="center", fontsize=12)  
         plt.show()
     
     if symptomPlotOn.get() == True:
@@ -416,7 +460,8 @@ virusMeanOn = BooleanVar(value = 0)
 virusMeanCheck =  ttk.Checkbutton(content, text = "Virus mean plot", variable = virusMeanOn)
 symptomPlotOn = BooleanVar(value = 0)
 symptomPlotCheck = ttk.Checkbutton(content, text = "Symptom plot", variable = symptomPlotOn)
-
+quarantineOn = BooleanVar(value = 0)
+quarantineCheck = ttk.Checkbutton(content, text = "Quarantine", variable = quarantineOn)
 
 # Insert default value
 populationSizeEntry.insert(0,5000)
@@ -432,10 +477,10 @@ initialVirusCountEntry.insert(0,1000)
 initialPlasmaCountEntry.insert(0,10000)
 initialMcellCountEntry.insert(0,45000)
 
-modelTimeChangerEntry.insert(0,10)
-modelTimeTotalEntry.insert(0,100)
-aUpperEntry.insert(0,1)
-aLowerEntry.insert(0,2)
+modelTimeChangerEntry.insert(0,18)
+modelTimeTotalEntry.insert(0,200)
+aUpperEntry.insert(0,3)
+aLowerEntry.insert(0,0.9)
 bUpperEntry.insert(0,0.5)
 bLowerEntry.insert(0,0.5)
 cUpperEntry.insert(0,0.1)
@@ -448,10 +493,10 @@ fUpperEntry.insert(0,0.5)
 fLowerEntry.insert(0,0.5)
 gUpperEntry.insert(0,0.1)
 gLowerEntry.insert(0,0.1)
-symptomOneEntry.insert(0,100)
-symptomTwoEntry.insert(0,1000)
-symptomThreeEntry.insert(0,10000)
-symptomFourEntry.insert(0,100000)
+symptomOneEntry.insert(0,10000)
+symptomTwoEntry.insert(0,100000)
+symptomThreeEntry.insert(0,1000000)
+symptomFourEntry.insert(0,10000000)
 
 
 # Grid
@@ -560,9 +605,11 @@ virusMeanCheck.grid(row = rowIndex, column = 0, sticky = W)
 rowIndex += 1
 symptomPlotCheck.grid(row = rowIndex, column = 0, sticky = W)
 
+rowIndex += 1
+quarantineCheck.grid(row = rowIndex, column = 0, sticky = W)
 
 # Keybindings
-root.bind('<Return>', lambda e: runButton.invoke())
+root.bind('<Return>', lambda e: runInitialImmuneSystemButton.invoke())
 runInitialImmuneSystemButton.invoke()
 
 root.mainloop()
