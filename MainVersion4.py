@@ -313,8 +313,9 @@ def main():
                     if vaccineDoses < Parameters.totalVaccineDoses:
                         if all([agentVirus[ix] == 0, agentPlasma[ix] == 0]):
                             r = np.random.rand()
-                            if r > Parameters.vaccineEfficacy:
+                            if r < Parameters.vaccineEfficacy:
                                 modelConstantsVaccine[5][ix] = modelConstantsVaccine[5][ix]*100
+                                modelConstantsVaccine[6][ix] = modelConstantsVaccine[6][ix]/10
                             agentVirusFake[ix] = 100 
                             removeIndex.append(index)
                             vaccineDoses = vaccineDoses + 1
@@ -363,8 +364,8 @@ def main():
         susepteblePlot  = [sum(populationPlot[3][i:i+n])//n for i in range(0,len(populationPlot[3]),n)]
         plotLength = np.linspace(0,len(populationPlot[0]),len(susepteblePlot))
         plt.plot(plotLength[:-1], infectedPlot[:-1], 'r', label = 'infected')
-        plt.plot(plotLength[:-1], immunePlot[:-1], 'b', label = 'symptomatic')
-        plt.plot(plotLength[:-1], symptomaticPlot[:-1], 'orange', label = 'immune')    
+        plt.plot(plotLength[:-1], immunePlot[:-1], 'b', label = 'immune')
+        plt.plot(plotLength[:-1], symptomaticPlot[:-1], 'orange', label = 'symptomatic')    
         plt.plot(plotLength[:-1], susepteblePlot[:-1], 'g', label = 'susepteble')
         plt.xlabel('Timecycles', fontsize=12)
         plt.ylabel('Number of agents', fontsize=12)
