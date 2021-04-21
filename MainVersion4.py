@@ -4,6 +4,7 @@ Created on Thu Apr  8 10:33:35 2021
 
 @author: kevin
 """
+#% Main
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -108,9 +109,9 @@ def PlotInitialImmuneSystem():
     plotPlasma.plot([0,Parameters.modelTimeTotal+1],[Parameters.symptomTwo,Parameters.symptomTwo], color="black", linestyle="--")
     plotPlasma.plot([0,Parameters.modelTimeTotal+1],[Parameters.symptomThree,Parameters.symptomThree], color="black", linestyle="--")
     plotPlasma.plot([0,Parameters.modelTimeTotal+1],[Parameters.symptomFour,Parameters.symptomFour], color="black", linestyle="--")
-    plotPlasma.text(Parameters.modelTimeTotal,Parameters.symptomOne, "1")
+    plotPlasma.text(0,Parameters.symptomOne, "1")
     plotPlasma.text(0,Parameters.symptomTwo, "2")
-    plotPlasma.text(Parameters.modelTimeTotal,Parameters.symptomThree, "3")
+    plotPlasma.text(0,Parameters.symptomThree, "3")
     plotPlasma.text(0,Parameters.symptomFour, "4")
     for plot in [plotAll,plotVirus,plotPlasma, plotMcell]:
         plot.legend()
