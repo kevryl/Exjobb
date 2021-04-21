@@ -332,27 +332,31 @@ def main():
             totalImmune = 0
             totalSusepteble = 0
             for ix in range(Parameters.populationSize):
-                if agentVirus[ix] > 0 :
+                if agentVirus[ix] > 10 :
                     totalInfected += +1
-                elif all([agentVirus[ix] == 0, agentPlasma[ix] > Parameters.symptomOne]):
+                elif all([agentVirus[ix] < 10, agentPlasma[ix] > Parameters.symptomOne]):
                     totalSymptomatic +=  1
-                elif all([agentVirus[ix] == 0, agentPlasma[ix] == 0, agentMcell[ix] > 5000]): 
+                elif  agentMcell[ix] > 1000: 
                     totalImmune +=  1
                 else:
                     totalSusepteble += 1            
             if totalInfected == 0:
                 break
-            virusMeanPlot.append(np.mean(agentVirus))
+            
             
             populationPlot[0].append(totalInfected)
             populationPlot[1].append(totalSymptomatic)
             populationPlot[2].append(totalImmune)
             populationPlot[3].append(totalSusepteble)
             if symptomPlotOn.get() == True:
-                symptomPlot.append(np.sort(agentSymptom).tolist())
-
+                symptomPlot.append(agentSymptom)
+            if virusMeanOn.get() == True:
+                virusMeanPlot.append(np.mean(agentVirus))
+                
     if virusMeanOn.get() == True:
-        plt.plot(virusMeanPlot)
+        plt.xlabel('Timecycles')
+        plt.ylabel()
+        plt.plot(virusMeanPlot, label = 'Virus mean')
         plt.show()
         
     if plotOn.get() == True:    
@@ -377,8 +381,9 @@ def main():
         plt.show()
     
     if symptomPlotOn.get() == True:
-        fig, ax = plt.subplots()
-        im = ax.imshow(symptomPlot, cmap="YlGn")
+        fig, ax = plt.subplots(2)
+        ax[0].imshow(symptomPlot, cmap="twilight") #YlGn
+        ax[1].imshow(np.sort(symptomPlot).tolist(), cmap="twilight")
         plt.show()
 
         
