@@ -386,11 +386,28 @@ def main():
         ax[0].imshow(symptomPlot, cmap="twilight") #YlGn
         ax[1].imshow(np.sort(symptomPlot).tolist(), cmap="twilight")
         plt.show()
-
+        
+    if value_check.get() == True:
+        return populationPlot
+    
         
     executionTime = (time.time() - startTime)
     print('Total execution time in seconds: ' + str(executionTime))
     print("Run done")
+
+def multipleRuns():
+    print(value_check.get())
+    for count in range(int(multipleRunsEntry.get())):
+        populationPlot = main()
+        
+        
+    
+
+
+def activate_enable_button():
+    # multipleRunsButton.config(state=DISABLED if value_check.get() else NORMAL)
+    multipleRunsButton.config(state=NORMAL if value_check.get() else DISABLED)
+    multipleRunsEntry.config(state=NORMAL if value_check.get() else DISABLED)
 
 # if __name__ == "__main__":
 # Create the base root and parent
@@ -399,6 +416,7 @@ content = ttk.Frame(root, padding=(3,3,12,12))
 
 runButton = ttk.Button(content, text = "Run", command = main)
 runInitialImmuneSystemButton = ttk.Button(content, text = "Update immune system", command = PlotInitialImmuneSystem)
+multipleRunsButton = ttk.Button(content, text = "Multiple runs", command = multipleRuns, state = DISABLED)
 
 parametersLabel = ttk.Label(content, text = "Parameters", font = 15)
 checkboxLabel = ttk.Label(content, text = "Features", font = 15)
@@ -433,6 +451,7 @@ symptomOneLabel = ttk.Label(content, text = "Symptom 1")
 symptomTwoLabel = ttk.Label(content, text = "Symptom 2")
 symptomThreeLabel = ttk.Label(content, text = "Symptom 3")
 symptomFourLabel = ttk.Label(content, text = "Symptom 4")
+multipleRunsLabel = ttk.Label(content, text = "How many runs")
 
 
 populationSizeEntry = ttk.Entry(content, width = 8)
@@ -449,6 +468,7 @@ calculationTimerEntry = ttk.Entry(content, width = 8)
 quarantineDurationEntry = ttk.Entry(content, width = 8)
 quarantineThresholdEntry = ttk.Entry(content, width = 8)
 vaccineEfficacyEntry = ttk.Entry(content, width = 8)
+multipleRunsEntry = ttk.Entry(content, width = 8)
 
 
 modelTimeChangerEntry = ttk.Entry(content, width = 8)
@@ -482,6 +502,11 @@ symptomPlotOn = BooleanVar(value = 0)
 symptomPlotCheck = ttk.Checkbutton(content, text = "Symptom plot", variable = symptomPlotOn)
 quarantineOn = BooleanVar(value = 0)
 quarantineCheck = ttk.Checkbutton(content, text = "Quarantine", variable = quarantineOn)
+value_check = IntVar()
+disableCheck = ttk.Checkbutton(content, variable=value_check, text='Activate multiple runs',
+                              command=disable_enable_button)
+
+
 
 # Insert default value
 populationSizeEntry.insert(0,5000)
@@ -640,6 +665,14 @@ symptomPlotCheck.grid(row = rowIndex, column = 0, sticky = W)
 
 rowIndex += 1
 quarantineCheck.grid(row = rowIndex, column = 0, sticky = W)
+
+rowIndex += 1
+disableCheck.grid(row = rowIndex, column = 0, sticky = W)
+multipleRunsButton.grid(row = rowIndex, column = 1)
+
+rowIndex += 1
+multipleRunsLabel.grid(row = rowIndex, column = 1)
+multipleRunsEntry.grid(row = rowIndex, column = 2)
 
 # Keybindings
 root.bind('<Return>', lambda e: runInitialImmuneSystemButton.invoke())
