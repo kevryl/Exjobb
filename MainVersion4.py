@@ -435,17 +435,27 @@ def multipleRuns():
     plotLength = np.linspace(0, Parameters.simulationTime,len(infectedMean))
 
     
-    plt.errorbar(plotLength, infectedMean ,yerr = infectedError, capsize=5)
-    plt.errorbar(plotLength, symptomaticMean,yerr = symptomaticError, capsize=5)
-    plt.errorbar(plotLength, immuneMean,yerr = immuneError, capsize=5)
-    plt.errorbar(plotLength, suseptebleMean,yerr = suseptebleError, capsize=5)
+    plt.plot(plotLength,infectedMean,c = "red")
+    plt.fill_between(plotLength, infectedMean - 2*infectedError, infectedMean + 2*infectedError, color='red', alpha=0.2)
+    plt.plot(plotLength,symptomaticMean,c = "orange")
+    plt.fill_between(plotLength, symptomaticMean - 2*symptomaticError, symptomaticMean + 2*symptomaticError, color='orange', alpha=0.2)
+    plt.plot(plotLength,immuneMean,c = "blue")
+    plt.fill_between(plotLength, immuneMean - 2*immuneError, immuneMean + 2*immuneError, color='blue', alpha=0.2)
+    plt.plot(plotLength,suseptebleMean,c = "green")
+    plt.fill_between(plotLength, suseptebleMean - 2*suseptebleError, suseptebleMean + 2*suseptebleError, color='green', alpha=0.2)
     plt.show()
     
-    sns.relplot(x=plotLength, y=infectedMean, data = infected, kind="line")
-    sns.relplot(x=plotLength, y=symptomaticMean, data = symptomatic, kind="line")
-    sns.relplot(x=plotLength, y=immuneMean, data = immune, kind="line")
-    sns.relplot(x=plotLength, y=suseptebleMean, data = susepteble, kind="line")
-    plt.show()
+    # plt.errorbar(plotLength, infectedMean ,yerr = infectedError, capsize=5)
+    # plt.errorbar(plotLength, symptomaticMean,yerr = symptomaticError, capsize=5)
+    # plt.errorbar(plotLength, immuneMean,yerr = immuneError, capsize=5)
+    # plt.errorbar(plotLength, suseptebleMean,yerr = suseptebleError, capsize=5)
+    # plt.show()
+    
+    # sns.relplot(x=plotLength, y=infectedMean, data = infected, kind="line")
+    # sns.relplot(x=plotLength, y=symptomaticMean, data = symptomatic, kind="line")
+    # sns.relplot(x=plotLength, y=immuneMean, data = immune, kind="line")
+    # sns.relplot(x=plotLength, y=suseptebleMean, data = susepteble, kind="line")
+    # plt.show()
 
 
 def activate_enable_button():
