@@ -16,6 +16,7 @@ from tkinter import *
 from tkinter import ttk
 
 import time
+import seaborn as sns
 
 
 def Parameters():
@@ -237,7 +238,6 @@ def DiseaseSpeadingQuarantine(gridStructure, virus, symptom):
     return virus
 
 def main():
-    print("")
     print("Run started")
     startTime = time.time()
 
@@ -340,9 +340,11 @@ def main():
                 elif  agentMcell[ix] > 1000: 
                     totalImmune +=  1
                 else:
-                    totalSusepteble += 1            
-            if totalInfected == 0:
-                break
+                    totalSusepteble += 1         
+            
+            if breakOn.get() == True:
+                if totalInfected == 0:
+                    break
             
             
             populationPlot[0].append(totalInfected)
@@ -387,21 +389,63 @@ def main():
         ax[1].imshow(np.sort(symptomPlot).tolist(), cmap="twilight")
         plt.show()
         
-    if value_check.get() == True:
-        return populationPlot
-    
         
     executionTime = (time.time() - startTime)
     print('Total execution time in seconds: ' + str(executionTime))
     print("Run done")
-
-def multipleRuns():
-    print(value_check.get())
-    for count in range(int(multipleRunsEntry.get())):
-        populationPlot = main()
-        
+    print("")
+    
+    if value_check.get() == True:
+        return populationPlot
+    
         
     
+
+def multipleRuns():
+    Parameters()
+    print("Run number 0")
+    populationPlot = main()
+    n = 5
+    infected    = np.array([[sum(populationPlot[0][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]])
+    symptomatic = np.array([[sum(populationPlot[1][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]])
+    immune      = np.array([[sum(populationPlot[2][i:i+n])//n for i in range(0,len(populationPlot[2]),n)]])
+    susepteble  = np.array([[sum(populationPlot[3][i:i+n])//n for i in range(0,len(populationPlot[3]),n)]])
+    # 0 = infected, 1 = symptomatic, 2 = immune, 3 = susepteble
+    for count in range(1,int(multipleRunsEntry.get())):
+        print("Run number {}".format(count))
+        populationPlot = main()
+        n = 5
+        infectedPlot    = np.array([[sum(populationPlot[0][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]])
+        symptomaticPlot = np.array([[sum(populationPlot[1][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]])
+        immunePlot      = np.array([[sum(populationPlot[2][i:i+n])//n for i in range(0,len(populationPlot[2]),n)]])
+        susepteblePlot  = np.array([[sum(populationPlot[3][i:i+n])//n for i in range(0,len(populationPlot[3]),n)]])
+        infected    = np.append(infected,infectedPlot, axis = 0)
+        symptomatic = np.append(symptomatic,symptomaticPlot, axis = 0)
+        immune      = np.append(immune,immunePlot, axis = 0)
+        susepteble  = np.append(susepteble,susepteblePlot, axis = 0)
+    
+    infectedError = np.std(infected,axis=0)
+    symptomaticError = np.std(symptomatic,axis=0)
+    immuneError = np.std(immune,axis=0)
+    suseptebleError = np.std(susepteble,axis=0)
+    infectedMean = np.mean(infected,axis = 0)
+    symptomaticMean = np.mean(symptomatic,axis = 0)
+    immuneMean = np.mean(immune,axis = 0)
+    suseptebleMean = np.mean(susepteble,axis = 0)
+    plotLength = np.linspace(0, Parameters.simulationTime,len(infectedMean))
+
+    
+    plt.errorbar(plotLength, infectedMean ,yerr = infectedError, capsize=5)
+    plt.errorbar(plotLength, symptomaticMean,yerr = symptomaticError, capsize=5)
+    plt.errorbar(plotLength, immuneMean,yerr = immuneError, capsize=5)
+    plt.errorbar(plotLength, suseptebleMean,yerr = suseptebleError, capsize=5)
+    plt.show()
+    
+    sns.relplot(x=plotLength, y=infectedMean, data = infected, kind="line")
+    sns.relplot(x=plotLength, y=symptomaticMean, data = symptomatic, kind="line")
+    sns.relplot(x=plotLength, y=immuneMean, data = immune, kind="line")
+    sns.relplot(x=plotLength, y=suseptebleMean, data = susepteble, kind="line")
+    plt.show()
 
 
 def activate_enable_button():
@@ -409,6 +453,7 @@ def activate_enable_button():
     multipleRunsButton.config(state=NORMAL if value_check.get() else DISABLED)
     multipleRunsEntry.config(state=NORMAL if value_check.get() else DISABLED)
 
+    
 # if __name__ == "__main__":
 # Create the base root and parent
 root = Tk()
@@ -502,9 +547,11 @@ symptomPlotOn = BooleanVar(value = 0)
 symptomPlotCheck = ttk.Checkbutton(content, text = "Symptom plot", variable = symptomPlotOn)
 quarantineOn = BooleanVar(value = 0)
 quarantineCheck = ttk.Checkbutton(content, text = "Quarantine", variable = quarantineOn)
+breakOn = BooleanVar(value = 0)
+breakOnCheck = ttk.Checkbutton(content, text = "Break early", variable = breakOn)
 value_check = IntVar()
 disableCheck = ttk.Checkbutton(content, variable=value_check, text='Activate multiple runs',
-                              command=disable_enable_button)
+                              command=activate_enable_button)
 
 
 
@@ -665,6 +712,9 @@ symptomPlotCheck.grid(row = rowIndex, column = 0, sticky = W)
 
 rowIndex += 1
 quarantineCheck.grid(row = rowIndex, column = 0, sticky = W)
+
+rowIndex += 1
+breakOnCheck.grid(row= rowIndex, column = 0, sticky = W)
 
 rowIndex += 1
 disableCheck.grid(row = rowIndex, column = 0, sticky = W)
