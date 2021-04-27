@@ -335,7 +335,7 @@ def main():
             for ix in range(Parameters.populationSize):
                 if agentVirus[ix] > 10 :
                     totalInfected += +1
-                elif all([agentVirus[ix] < 10, agentPlasma[ix] > Parameters.symptomOne]):
+                elif agentPlasma[ix] > Parameters.symptomOne:
                     totalSymptomatic +=  1
                 elif  agentMcell[ix] > 1000: 
                     totalImmune +=  1
