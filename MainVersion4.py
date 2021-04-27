@@ -408,6 +408,7 @@ def multipleRuns():
     print("Run number 0")
     populationPlot = main()
     n = 5
+    # Remove the last entry
     infected    = np.array([[sum(populationPlot[0][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]])
     symptomatic = np.array([[sum(populationPlot[1][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]])
     immune      = np.array([[sum(populationPlot[2][i:i+n])//n for i in range(0,len(populationPlot[2]),n)]])
@@ -436,15 +437,18 @@ def multipleRuns():
     suseptebleMean = np.mean(susepteble,axis = 0)
     plotLength = np.linspace(0, Parameters.simulationTime,len(infectedMean))
 
-    
-    plt.plot(plotLength,infectedMean,c = "red")
-    plt.fill_between(plotLength, infectedMean - 2*infectedError, infectedMean + 2*infectedError, color='red', alpha=0.3)
-    plt.plot(plotLength,symptomaticMean,c = "orange")
-    plt.fill_between(plotLength, symptomaticMean - 2*symptomaticError, symptomaticMean + 2*symptomaticError, color='orange', alpha=0.3)
-    plt.plot(plotLength,immuneMean,c = "blue")
-    plt.fill_between(plotLength, immuneMean - 2*immuneError, immuneMean + 2*immuneError, color='blue', alpha=0.3)
-    plt.plot(plotLength,suseptebleMean,c = "green")
-    plt.fill_between(plotLength, suseptebleMean - 2*suseptebleError, suseptebleMean + 2*suseptebleError, color='green', alpha=0.3)
+    plt.plot(plotLength[:-1],infectedMean[:-1],c = "red")
+    plt.fill_between(plotLength[:-1], infectedMean[:-1] - 2*infectedError[:-1], infectedMean[:-1] + 2*infectedError[:-1], color='red', alpha=0.3)
+    plt.plot(plotLength[:-1],symptomaticMean[:-1],c = "orange")
+    plt.fill_between(plotLength[:-1], symptomaticMean[:-1] - 2*symptomaticError[:-1], symptomaticMean[:-1] + 2*symptomaticError[:-1], color='orange', alpha=0.3)
+    plt.plot(plotLength[:-1],immuneMean[:-1],c = "blue")
+    plt.fill_between(plotLength[:-1], immuneMean[:-1] - 2*immuneError[:-1], immuneMean[:-1] + 2*immuneError[:-1], color='blue', alpha=0.3)
+    plt.plot(plotLength[:-1],suseptebleMean[:-1],c = "green")
+    plt.fill_between(plotLength[:-1], suseptebleMean[:-1] - 2*suseptebleError[:-1], suseptebleMean[:-1] + 2*suseptebleError[:-1], color='green', alpha=0.3)
+    modelConstantsTextLower = 'Lower: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.3f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aLower, Parameters.bLower, Parameters.cLower, Parameters.dLower, Parameters.eLower, Parameters.fLower, Parameters.gLower)
+    plt.figtext(0.5, -0.05, modelConstantsTextLower, ha="center", fontsize=12) 
+    modelConstantsTextUpper = 'Upper: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.3f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aUpper, Parameters.bLower, Parameters.cUpper, Parameters.dUpper, Parameters.eUpper, Parameters.fUpper, Parameters.gUpper)
+    plt.figtext(0.5, -0.10, modelConstantsTextUpper, ha="center", fontsize=12)  
     plt.show()
 
 
