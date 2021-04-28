@@ -34,9 +34,9 @@ for ix in range(time):
     virus = virus + dvdt
     tcell = tcell + dTdt
     mcell = mcell + dMdt
-    if virus < 10: virus = 0
-    if tcell < 10: tcell = 0
-    if mcell < 10: mcell = 0
+    if virus < 40: virus = 0
+    if tcell < 40: tcell = 0
+    if mcell < 40: mcell = 0
     # elif ix == 750:
     #     virus = virus + 500
     virusPlot.append(virus)
