@@ -317,7 +317,7 @@ def main():
                             if r < Parameters.vaccineEfficacy:
                                 modelConstantsVaccine[5][ix] = modelConstantsVaccine[5][ix]*100
                                 modelConstantsVaccine[6][ix] = modelConstantsVaccine[6][ix]/10
-                            agentVirusFake[ix] = 100 
+                                agentVirusFake[ix] = 100 
                             removeIndex.append(index)
                             vaccineDoses = vaccineDoses + 1
                 agentVirusFake, agentPlasmaFake, agentMcellFake = Model(modelConstantsVaccine, 
@@ -437,17 +437,20 @@ def multipleRuns():
     suseptebleMean = np.mean(susepteble,axis = 0)
     plotLength = np.linspace(0, Parameters.simulationTime,len(infectedMean))
 
-    for mean, error, color in [[infectedMean, infectedError, 'red'],\
-                               [symptomaticMean, symptomaticError, 'orange'],\
-                                   [immuneMean, immuneError, 'blue'],\
-                                [suseptebleMean, suseptebleError, 'green']]:
-        plt.plot(plotLength[:-1], mean[:-1], c = color)
+    for mean, error, color, text in [[infectedMean, infectedError, 'red', 'infected'],\
+                               [symptomaticMean, symptomaticError, 'orange', 'symptomatic'],\
+                                   [immuneMean, immuneError, 'blue', 'immune'],\
+                                [suseptebleMean, suseptebleError, 'green', 'susepteble']]:
+        plt.plot(plotLength[:-1], mean[:-1], c = color, label = text)
         ciLower = mean - 2*error
         ciLowerBounded = np.where(ciLower>0,ciLower,0)
         ciUpper = mean + 2*error
         ciUpperBounded = np.where(ciUpper<Parameters.populationSize,ciUpper, Parameters.populationSize)
         plt.fill_between(plotLength[:-1], ciLowerBounded[:-1], ciUpperBounded[:-1], color = color, alpha = 0.3)
-
+     
+    plt.legend()
+    plt.xlabel('Time cycle')
+    plt.ylabel('Agents')
     modelConstantsTextLower = 'Lower: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.3f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aLower, Parameters.bLower, Parameters.cLower, Parameters.dLower, Parameters.eLower, Parameters.fLower, Parameters.gLower)
     plt.figtext(0.5, -0.05, modelConstantsTextLower, ha="center", fontsize=12) 
     modelConstantsTextUpper = 'Upper: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.3f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aUpper, Parameters.bLower, Parameters.cUpper, Parameters.dUpper, Parameters.eUpper, Parameters.fUpper, Parameters.gUpper)
