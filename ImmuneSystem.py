@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 virus = 10000
 tcell = 0
-mcell = 10000
+mcell = 50000
 
 parameterTimeChanger = 5
 a = 1/parameterTimeChanger #np.random.normal(2,0.2)
@@ -26,7 +26,7 @@ tcellPlot = [tcell]
 mcellPlot = [mcell]
 
 
-time = 1000
+time = 100
 for ix in range(time):
     dvdt = a*virus - b*tcell
     dTdt = virus*(c + d*mcell) - e*tcell

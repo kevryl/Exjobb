@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Created on Thu Apr 29 12:28:22 2021
+
+@author: kevin
+"""
+
+# -*- coding: utf-8 -*-
+"""
 Created on Thu Apr  8 10:33:35 2021
 
 @author: kevin
@@ -16,23 +23,19 @@ from tkinter import *
 from tkinter import ttk
 
 import time
-import seaborn as sns
-
 
 def Parameters():
-    Parameters.populationSize = int(populationSizeEntry.get())
-    Parameters.gridSizeSide = int(gridSizeSideEntry.get())
-    Parameters.initialInfected = int(initialInfectedEntry.get())
-    Parameters.infectionProbability = float(infectionProbabilityEntry.get())
-    Parameters.initialImmune = int(initialImmuneEntry.get())
-    Parameters.totalVaccineDoses = int(totalVaccineDosesEntry.get())
     Parameters.simulationTime = int(simulationTimeEntry.get())
     Parameters.calculationTimer = int(calculationTimerEntry.get())
+    Parameters.populationSize = int(populationSizeEntry.get())
+    Parameters.gridSizeSide = int(gridSizeSideEntry.get())
+    Parameters.infectionProbability = float(infectionProbabilityEntry.get())
+    Parameters.initialInfected = int(initialInfectedEntry.get())
+    Parameters.initialImmune = int(initialImmuneEntry.get())
     Parameters.initialVirusCount = int(initialVirusCountEntry.get())
     Parameters.initialPlasmaCount = int(initialPlasmaCountEntry.get())
     Parameters.initialMcellCount = int(initialMcellCountEntry.get())
-    Parameters.quarantineDuration = int(quarantineDurationEntry.get())
-    Parameters.quarantineThreshold = float(quarantineThresholdEntry.get())
+    Parameters.totalVaccineDoses = int(totalVaccineDosesEntry.get())
     Parameters.vaccineEfficacy = float(vaccineEfficacyEntry.get())
     
     Parameters.modelTimeChanger = float(modelTimeChangerEntry.get())
@@ -82,8 +85,8 @@ def PlotInitialImmuneSystem():
         mcell = [Parameters.initialMcellCount]
         
         virusTemp = Parameters.initialVirusCount
-        plasmaTemp = 0
-        mcellTemp = 10
+        plasmaTemp = Parameters.initialPlasmaCount
+        mcellTemp = Parameters.initialMcellCount
     
         for ix in range(Parameters.modelTimeTotal):
             virusTemp, plasmaTemp, mcellTemp = Model(singleConstants, virusTemp, plasmaTemp, mcellTemp)
@@ -141,7 +144,7 @@ def CreatePopulation():
         agentRotation[ix] = np.random.uniform(-np.pi,np.pi)
         if ix < Parameters.initialInfected:
             agentVirus[ix] = Parameters.initialVirusCount
-        if ix < Parameters.initialImmune and ix > Parameters.initialInfected +  Parameters.initialImmune:
+        if all([ix > Parameters.initialInfected, ix < Parameters.initialInfected +  Parameters.initialImmune]) == True:
             agentPlasma[ix] = Parameters.initialPlasmaCount
             agentMcell[ix] = Parameters.initialMcellCount
     return agentPosition, agentSpeed, agentRotation, agentVirus, agentPlasma, agentMcell, agentSymptom, vaccinationList
@@ -217,25 +220,6 @@ def DiseaseSpeading(gridStructure, virus, symptom):
                             virus[localSuseptebleIndex] = virus[localSuseptebleIndex] + virus[localInfectedIndex]*0.01
     return virus
 
-def DiseaseSpeadingQuarantine(gridStructure, virus, symptom):
-    Parameters()
-    for ix in range(Parameters.gridSizeSide):
-        for jx in range(Parameters.gridSizeSide):
-            if gridStructure[ix][jx] != [] and len(gridStructure[ix][jx]) != 1:
-                localInfected = []
-                localSusepteble = []
-                for agentIndex in gridStructure[ix][jx]:
-                    if virus[agentIndex] != 0:
-                        localInfected.append(agentIndex)
-                    else:
-                        localSusepteble.append(agentIndex)
-                for localSuseptebleIndex in localSusepteble:
-                    for localInfectedIndex in localInfected:
-                        r = np.random.rand()
-                        meetingProbability = np.power(1/2,symptom[localInfectedIndex])/100
-                        if r < Parameters.infectionProbability*meetingProbability:
-                            virus[localSuseptebleIndex] = virus[localSuseptebleIndex] + virus[localInfectedIndex]*0.01
-    return virus
 
 def main():
     print("Run started")
@@ -255,12 +239,6 @@ def main():
         agentMcellFake = np.zeros(Parameters.populationSize)
         modelConstantsVaccine = CreateModelConstant()
         modelConstantsVaccine[5] = modelConstantsVaccine[5]/10
-
-
-    if quarantineOn.get() == True:
-        startQuarantine = False
-        quarantineTime = 0
-        totalInfected = 0
         
         
     if symptomPlotOn.get() == True:
@@ -294,18 +272,8 @@ def main():
                 columnIndex = flooredAgentPosition[agentIndex][1].astype('int')
                 gridStructure[rowIndex][columnIndex].append(agentIndex)
             
-            if quarantineOn.get() == True:
-                if totalInfected/Parameters.populationSize > Parameters.quarantineThreshold:
-                    startQuarantine = True
-                if quarantineTime > Parameters.quarantineDuration:
-                    startQuarantine = False
-                if startQuarantine == True:
-                    agentVirus = DiseaseSpeadingQuarantine(gridStructure, agentVirus, agentSymptom)
-                    quarantineTime += 1
-                else:
-                    agentVirus = DiseaseSpeading(gridStructure, agentVirus, agentSymptom)
-            else:
-                agentVirus = DiseaseSpeading(gridStructure, agentVirus, agentSymptom)
+
+            agentVirus = DiseaseSpeading(gridStructure, agentVirus, agentSymptom)
             
             if vaccinationOn.get() == True:
                 vaccineDoses = 0
@@ -317,7 +285,7 @@ def main():
                             if r < Parameters.vaccineEfficacy:
                                 modelConstantsVaccine[5][ix] = modelConstantsVaccine[5][ix]*100
                                 modelConstantsVaccine[6][ix] = modelConstantsVaccine[6][ix]/10
-                                agentVirusFake[ix] = 100 
+                            agentVirusFake[ix] = 100 
                             removeIndex.append(index)
                             vaccineDoses = vaccineDoses + 1
                 agentVirusFake, agentPlasmaFake, agentMcellFake = Model(modelConstantsVaccine, 
@@ -351,6 +319,7 @@ def main():
             populationPlot[1].append(totalSymptomatic)
             populationPlot[2].append(totalImmune)
             populationPlot[3].append(totalSusepteble)
+            
             if symptomPlotOn.get() == True:
                 symptomPlot.append(agentSymptom)
             if virusMeanOn.get() == True:
@@ -408,12 +377,11 @@ def multipleRuns():
     print("Run number 0")
     populationPlot = main()
     n = 5
-    # Remove the last entry
+    # 0 = infected, 1 = symptomatic, 2 = immune, 3 = susepteble
     infected    = np.array([[sum(populationPlot[0][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]])
     symptomatic = np.array([[sum(populationPlot[1][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]])
     immune      = np.array([[sum(populationPlot[2][i:i+n])//n for i in range(0,len(populationPlot[2]),n)]])
     susepteble  = np.array([[sum(populationPlot[3][i:i+n])//n for i in range(0,len(populationPlot[3]),n)]])
-    # 0 = infected, 1 = symptomatic, 2 = immune, 3 = susepteble
     for count in range(1,int(multipleRunsEntry.get())):
         print("Run number {}".format(count))
         populationPlot = main()
@@ -451,7 +419,7 @@ def multipleRuns():
     plt.legend()
     plt.xlabel('Time cycle')
     plt.ylabel('Agents')
-    modelConstantsTextLower = 'Lower: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.3f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aLower, Parameters.bLower, Parameters.cLower, Parameters.dLower, Parameters.eLower, Parameters.fLower, Parameters.gLower)
+    modelConstantsTextLower = 'Lower: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.4f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aLower, Parameters.bLower, Parameters.cLower, Parameters.dLower, Parameters.eLower, Parameters.fLower, Parameters.gLower)
     plt.figtext(0.5, -0.05, modelConstantsTextLower, ha="center", fontsize=12) 
     modelConstantsTextUpper = 'Upper: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.3f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aUpper, Parameters.bLower, Parameters.cUpper, Parameters.dUpper, Parameters.eUpper, Parameters.fUpper, Parameters.gUpper)
     plt.figtext(0.5, -0.10, modelConstantsTextUpper, ha="center", fontsize=12)  
@@ -462,6 +430,8 @@ def activate_enable_button():
     # multipleRunsButton.config(state=DISABLED if value_check.get() else NORMAL)
     multipleRunsButton.config(state=NORMAL if value_check.get() else DISABLED)
     multipleRunsEntry.config(state=NORMAL if value_check.get() else DISABLED)
+    breakOn.set(False)
+    breakOnCheck.config(state=DISABLED if value_check.get() else NORMAL)
 
     
 # if __name__ == "__main__":
@@ -469,29 +439,27 @@ def activate_enable_button():
 root = Tk()
 content = ttk.Frame(root, padding=(3,3,12,12))
 
-runButton = ttk.Button(content, text = "Run", command = main)
+runButton = ttk.Button(content, text = "Run",  command = lambda:[plotOn.set(True),main()])
 runInitialImmuneSystemButton = ttk.Button(content, text = "Update immune system", command = PlotInitialImmuneSystem)
 multipleRunsButton = ttk.Button(content, text = "Multiple runs", command = multipleRuns, state = DISABLED)
 
 parametersLabel = ttk.Label(content, text = "Parameters", font = 15)
 checkboxLabel = ttk.Label(content, text = "Features", font = 15)
 immuneParametersLabel = ttk.Label(content, text = "Immune parameters")
-populationSizeLabel = ttk.Label(content, text ="Population size")
-gridSizeSideLabel = ttk.Label(content, text = "Grid size side")
-initialInfectedLabel = ttk.Label(content, text = "Initial Infected")
-infectionProbabilityLabel = ttk.Label(content, text = "Infection probability")
-initialImmuneLabel = ttk.Label(content, text = "Initial Immune")
-totalVaccineDosesLabel = ttk.Label(content, text = "Total vaccine doses per CT")
+
 simulationTimeLabel = ttk.Label(content, text = "Simulation time")
 calculationTimerLabel = ttk.Label(content, text = "Calculation time")
+populationSizeLabel = ttk.Label(content, text ="Population size")
+gridSizeSideLabel = ttk.Label(content, text = "Grid size side")
+infectionProbabilityLabel = ttk.Label(content, text = "Infection probability")
+initialInfectedLabel = ttk.Label(content, text = "Initial Infected")
+initialImmuneLabel = ttk.Label(content, text = "Initial Immune")
 initialVirusCountLabel = ttk.Label(content, text = "Initial virus count")
 initialPlasmaCountLabel = ttk.Label(content, text = "Initial plasma count")
 initialMcellCountLabel = ttk.Label(content, text = "Initial mcell count")
-quarantineDurationLabel = ttk.Label(content, text = "Quarantine duration")
-quarantineThresholdLabel = ttk.Label(content, text = "Quarantine threshold")
+totalVaccineDosesLabel = ttk.Label(content, text = "Total vaccine doses per CT")
 vaccineEfficacyLabel = ttk.Label(content, text = "Vaccine efficacy")
 
-modelTimeChangerLabel = ttk.Label(content, text = "Model time changer")
 modelTimeTotalLabel = ttk.Label(content, text = "Total model time")
 lowerParameterLabel = ttk.Label(content, text = "lower")
 upperParameterLabel = ttk.Label(content, text = "Upper")
@@ -502,6 +470,7 @@ dLabel = ttk.Label(content, text = "d")
 eLabel = ttk.Label(content, text = "e")
 fLabel = ttk.Label(content, text = "f")
 gLabel = ttk.Label(content, text = "g")
+modelTimeChangerLabel = ttk.Label(content, text = "Model time changer")
 symptomOneLabel = ttk.Label(content, text = "Symptom 1")
 symptomTwoLabel = ttk.Label(content, text = "Symptom 2")
 symptomThreeLabel = ttk.Label(content, text = "Symptom 3")
@@ -509,19 +478,17 @@ symptomFourLabel = ttk.Label(content, text = "Symptom 4")
 multipleRunsLabel = ttk.Label(content, text = "How many runs")
 
 
+simulationTimeEntry = ttk.Entry(content, width = 8)
+calculationTimerEntry = ttk.Entry(content, width = 8)
 populationSizeEntry = ttk.Entry(content, width = 8)
 gridSizeSideEntry = ttk.Entry(content, width = 8)
-initialInfectedEntry = ttk.Entry(content, width = 8)
 infectionProbabilityEntry = ttk.Entry(content, width = 8)
+initialInfectedEntry = ttk.Entry(content, width = 8)
 initialImmuneEntry = ttk.Entry(content, width = 8)
-totalVaccineDosesEntry = ttk.Entry(content, width = 8)
 initialVirusCountEntry = ttk.Entry(content, width = 8)
 initialPlasmaCountEntry = ttk.Entry(content, width = 8)
 initialMcellCountEntry = ttk.Entry(content, width = 8)
-simulationTimeEntry = ttk.Entry(content, width = 8)
-calculationTimerEntry = ttk.Entry(content, width = 8)
-quarantineDurationEntry = ttk.Entry(content, width = 8)
-quarantineThresholdEntry = ttk.Entry(content, width = 8)
+totalVaccineDosesEntry = ttk.Entry(content, width = 8)
 vaccineEfficacyEntry = ttk.Entry(content, width = 8)
 multipleRunsEntry = ttk.Entry(content, width = 8)
 
@@ -555,8 +522,6 @@ virusMeanOn = BooleanVar(value = 0)
 virusMeanCheck =  ttk.Checkbutton(content, text = "Virus mean plot", variable = virusMeanOn)
 symptomPlotOn = BooleanVar(value = 0)
 symptomPlotCheck = ttk.Checkbutton(content, text = "Symptom plot", variable = symptomPlotOn)
-quarantineOn = BooleanVar(value = 0)
-quarantineCheck = ttk.Checkbutton(content, text = "Quarantine", variable = quarantineOn)
 breakOn = BooleanVar(value = 0)
 breakOnCheck = ttk.Checkbutton(content, text = "Break early", variable = breakOn)
 value_check = IntVar()
@@ -566,19 +531,17 @@ disableCheck = ttk.Checkbutton(content, variable=value_check, text='Activate mul
 
 
 # Insert default value
-populationSizeEntry.insert(0,5000)
-gridSizeSideEntry.insert(0,35)
-initialInfectedEntry.insert(0,50)
-infectionProbabilityEntry.insert(0,0.02)
-initialImmuneEntry.insert(0,0)
-totalVaccineDosesEntry.insert(0,5)
 simulationTimeEntry.insert(0,1000)
 calculationTimerEntry.insert(0,100)
-initialVirusCountEntry.insert(0,1000)
+populationSizeEntry.insert(0,5000)
+gridSizeSideEntry.insert(0,35)
+infectionProbabilityEntry.insert(0,0.02)
+initialInfectedEntry.insert(0,50)
+initialImmuneEntry.insert(0,0)
+initialVirusCountEntry.insert(0,100)
 initialPlasmaCountEntry.insert(0,0)
-initialMcellCountEntry.insert(0,100000)
-quarantineDurationEntry.insert(0,360)
-quarantineThresholdEntry.insert(0,0.2)
+initialMcellCountEntry.insert(0,10)
+totalVaccineDosesEntry.insert(0,5)
 vaccineEfficacyEntry.insert(0,1)
 
 modelTimeChangerEntry.insert(0,18)
@@ -606,8 +569,6 @@ symptomFourEntry.insert(0,10000000)
 # Grid
 content.grid(row=0, column = 0, sticky=(N, S, E, W))
 runButton.grid(row = 0, column = 0, columnspan = 2)
-modelTimeChangerLabel.grid(row = 0, column = 2)
-modelTimeChangerEntry.grid(row = 0, column = 3)
 runInitialImmuneSystemButton.grid(row = 0, column = 4)
 
 rowIndex = 1
@@ -617,96 +578,95 @@ lowerParameterLabel.grid(row = rowIndex, column = 3)
 upperParameterLabel.grid(row = rowIndex, column = 4)
 
 rowIndex += 1
-populationSizeLabel.grid(row = rowIndex, column = 0)
-populationSizeEntry.grid(row = rowIndex, column = 1)
+simulationTimeLabel.grid(row = rowIndex, column = 0)
+simulationTimeEntry.grid(row = rowIndex, column = 1)
 aLabel.grid(row = rowIndex, column = 2)
 aLowerEntry.grid(row = rowIndex, column = 3)
 aUpperEntry.grid(row = rowIndex, column = 4)
 
 rowIndex += 1
-gridSizeSideLabel.grid(row = rowIndex, column = 0)
-gridSizeSideEntry.grid(row = rowIndex, column = 1)
+calculationTimerLabel.grid(row = rowIndex, column = 0)
+calculationTimerEntry.grid(row = rowIndex, column = 1)
+
 bLabel.grid(row = rowIndex, column = 2)
 bLowerEntry.grid(row = rowIndex, column = 3)
 bUpperEntry.grid(row = rowIndex, column = 4)
 
 rowIndex += 1
-initialInfectedLabel.grid(row = rowIndex, column = 0)
-initialInfectedEntry.grid(row = rowIndex, column = 1)
+populationSizeLabel.grid(row = rowIndex, column = 0)
+populationSizeEntry.grid(row = rowIndex, column = 1)
 cLabel.grid(row = rowIndex, column = 2)
 cLowerEntry.grid(row = rowIndex, column = 3)
 cUpperEntry.grid(row = rowIndex, column = 4)
 
 rowIndex += 1
-infectionProbabilityLabel.grid(row = rowIndex, column = 0)
-infectionProbabilityEntry.grid(row = rowIndex, column = 1)
+gridSizeSideLabel.grid(row = rowIndex, column = 0)
+gridSizeSideEntry.grid(row = rowIndex, column = 1)
 dLabel.grid(row = rowIndex, column = 2)
 dLowerEntry.grid(row = rowIndex, column = 3)
 dUpperEntry.grid(row = rowIndex, column = 4)
 
 rowIndex += 1
-initialImmuneLabel.grid(row = rowIndex, column = 0)
-initialImmuneEntry.grid(row = rowIndex, column = 1)
+infectionProbabilityLabel.grid(row = rowIndex, column = 0)
+infectionProbabilityEntry.grid(row = rowIndex, column = 1)
 eLabel.grid(row = rowIndex, column = 2)
 eLowerEntry.grid(row = rowIndex, column = 3)
 eUpperEntry.grid(row = rowIndex, column = 4)
 
+
+
 rowIndex += 1
-totalVaccineDosesLabel.grid(row = rowIndex, column = 0)
-totalVaccineDosesEntry.grid(row = rowIndex, column = 1)
+initialInfectedLabel.grid(row = rowIndex, column = 0)
+initialInfectedEntry.grid(row = rowIndex, column = 1)
 fLabel.grid(row = rowIndex, column = 2)
 fLowerEntry.grid(row = rowIndex, column = 3)
 fUpperEntry.grid(row = rowIndex, column = 4)
 
 rowIndex += 1
-simulationTimeLabel.grid(row = rowIndex, column = 0)
-simulationTimeEntry.grid(row = rowIndex, column = 1)
+initialImmuneLabel.grid(row = rowIndex, column = 0)
+initialImmuneEntry.grid(row = rowIndex, column = 1)
 gLabel.grid(row = rowIndex, column = 2)
 gLowerEntry.grid(row = rowIndex, column = 3)
 gUpperEntry.grid(row = rowIndex, column = 4)
 
 
 rowIndex += 1
-calculationTimerLabel.grid(row = rowIndex, column = 0)
-calculationTimerEntry.grid(row = rowIndex, column = 1)
+initialVirusCountLabel.grid(row = rowIndex, column = 0)
+initialVirusCountEntry.grid(row = rowIndex, column = 1)
 modelTimeTotalLabel.grid(row = rowIndex, column = 2)
 modelTimeTotalEntry.grid(row = rowIndex, column = 3)
 
 
 rowIndex += 1
-initialVirusCountLabel.grid(row = rowIndex, column = 0)
-initialVirusCountEntry.grid(row = rowIndex, column = 1)
-symptomOneLabel.grid(row = rowIndex, column = 2)
-symptomOneEntry.grid(row = rowIndex, column = 3)
-
-rowIndex += 1
 initialPlasmaCountLabel.grid(row = rowIndex, column = 0)
 initialPlasmaCountEntry.grid(row = rowIndex, column = 1)
-symptomTwoLabel.grid(row = rowIndex, column = 2)
-symptomTwoEntry.grid(row = rowIndex, column = 3)
+modelTimeChangerLabel.grid(row = rowIndex, column = 2)
+modelTimeChangerEntry.grid(row = rowIndex, column = 3)
 
 rowIndex += 1
 initialMcellCountLabel.grid(row = rowIndex, column = 0)
 initialMcellCountEntry.grid(row = rowIndex, column = 1)
-symptomThreeLabel.grid(row = rowIndex, column = 2)
-symptomThreeEntry.grid(row = rowIndex, column = 3)
+symptomOneLabel.grid(row = rowIndex, column = 2)
+symptomOneEntry.grid(row = rowIndex, column = 3)
 
 rowIndex += 1
-quarantineDurationLabel.grid(row = rowIndex, column = 0)
-quarantineDurationEntry.grid(row = rowIndex, column = 1)
-symptomFourLabel.grid(row = rowIndex, column = 2)
-symptomFourEntry.grid(row = rowIndex, column = 3)
+totalVaccineDosesLabel.grid(row = rowIndex, column = 0)
+totalVaccineDosesEntry.grid(row = rowIndex, column = 1)
+symptomTwoLabel.grid(row = rowIndex, column = 2)
+symptomTwoEntry.grid(row = rowIndex, column = 3)
 
-rowIndex += 1
-quarantineThresholdLabel.grid(row = rowIndex, column = 0)
-quarantineThresholdEntry.grid(row = rowIndex, column = 1)
 
 rowIndex += 1
 vaccineEfficacyLabel.grid(row = rowIndex, column = 0)
 vaccineEfficacyEntry.grid(row = rowIndex, column = 1)
+symptomThreeLabel.grid(row = rowIndex, column = 2)
+symptomThreeEntry.grid(row = rowIndex, column = 3)
 
 rowIndex += 1
 checkboxLabel.grid(row = rowIndex, column = 0)
+symptomFourLabel.grid(row = rowIndex, column = 2)
+symptomFourEntry.grid(row = rowIndex, column = 3)
+
 rowIndex += 1
 plotOnCheck.grid(row = rowIndex, column = 0, sticky = W)
 
@@ -718,9 +678,6 @@ virusMeanCheck.grid(row = rowIndex, column = 0, sticky = W)
 
 rowIndex += 1
 symptomPlotCheck.grid(row = rowIndex, column = 0, sticky = W)
-
-rowIndex += 1
-quarantineCheck.grid(row = rowIndex, column = 0, sticky = W)
 
 rowIndex += 1
 breakOnCheck.grid(row= rowIndex, column = 0, sticky = W)
