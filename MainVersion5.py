@@ -4,13 +4,6 @@ Created on Thu Apr 29 12:28:22 2021
 
 @author: kevin
 """
-
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Apr  8 10:33:35 2021
-
-@author: kevin
-"""
 #% Main
 
 import numpy as np
@@ -61,7 +54,6 @@ def Parameters():
     Parameters.gUpper = float(gUpperEntry.get())
     Parameters.gLower = float(gLowerEntry.get())
     
-    Parameters.symptomOne = int(symptomOneEntry.get())
     Parameters.symptomTwo = int(symptomTwoEntry.get())
     Parameters.symptomThree = int(symptomThreeEntry.get())
     Parameters.symptomFour = int(symptomFourEntry.get())
@@ -109,11 +101,10 @@ def PlotInitialImmuneSystem():
             plotVirus.plot(plotRange, virus, color="red", linestyle="-", label = "virus, upper")
             plotPlasma.plot(plotRange, plasma, color="blue", linestyle="-", label = "plasma, upper")
             plotMcell.plot(plotRange, mcell, color="green", linestyle="-", label = "mcell, upper") #"f = {:f}".format(singleConstants[5]) 
-    plotPlasma.plot([0,Parameters.modelTimeTotal+1],[Parameters.symptomOne,Parameters.symptomOne], color="black", linestyle="--", label = "Symptom")
-    plotPlasma.plot([0,Parameters.modelTimeTotal+1],[Parameters.symptomTwo,Parameters.symptomTwo], color="black", linestyle="--")
+    plotPlasma.plot([0,Parameters.modelTimeTotal+1],[Parameters.symptomTwo,Parameters.symptomTwo], color="black", linestyle="--", label = "Symptom")
     plotPlasma.plot([0,Parameters.modelTimeTotal+1],[Parameters.symptomThree,Parameters.symptomThree], color="black", linestyle="--")
     plotPlasma.plot([0,Parameters.modelTimeTotal+1],[Parameters.symptomFour,Parameters.symptomFour], color="black", linestyle="--")
-    plotPlasma.text(0,Parameters.symptomOne, "1")
+    plotPlasma.text(0,Parameters.symptomTwo/2.5, "1")
     plotPlasma.text(0,Parameters.symptomTwo, "2")
     plotPlasma.text(0,Parameters.symptomThree, "3")
     plotPlasma.text(0,Parameters.symptomFour, "4")
@@ -193,7 +184,6 @@ def Model(parameters, virus, plasma, mcell):
 def Symptom(agentSymptom, plasma):
     Parameters()
     agentSymptom = np.zeros(len(agentSymptom)).astype('int')
-    agentSymptom = np.where(plasma < Parameters.symptomOne, agentSymptom, 0)
     agentSymptom = np.where(plasma < Parameters.symptomTwo, agentSymptom, 1)
     agentSymptom = np.where(plasma < Parameters.symptomThree, agentSymptom, 2)
     agentSymptom = np.where(plasma < Parameters.symptomFour, agentSymptom, 3)
@@ -215,7 +205,7 @@ def DiseaseSpeading(gridStructure, virus, symptom):
                 for localSuseptebleIndex in localSusepteble:
                     for localInfectedIndex in localInfected:
                         r = np.random.rand()
-                        meetingProbability = np.power(1/2,symptom[localInfectedIndex])
+                        meetingProbability = np.power(1/5,symptom[localInfectedIndex])
                         if r < Parameters.infectionProbability*meetingProbability:
                             virus[localSuseptebleIndex] = virus[localSuseptebleIndex] + virus[localInfectedIndex]*0.01
     return virus
@@ -303,11 +293,11 @@ def main():
             for ix in range(Parameters.populationSize):
                 if agentVirus[ix] > 10 :
                     totalInfected += +1
-                if agentPlasma[ix] > Parameters.symptomOne:
+                if agentPlasma[ix] > Parameters.symptomTwo:
                     totalSymptomatic +=  1
                 if  agentMcell[ix] > 50000: 
                     totalImmune +=  1
-                if all([agentVirus[ix] < 10, agentPlasma[ix] < Parameters.symptomOne, agentMcell[ix] < 50000]):
+                if all([agentVirus[ix] < 10, agentPlasma[ix] < Parameters.symptomTwo, agentMcell[ix] < 50000]):
                     totalSusepteble += 1         
             
             if breakOn.get() == True:
@@ -471,7 +461,6 @@ eLabel = ttk.Label(content, text = "e")
 fLabel = ttk.Label(content, text = "f")
 gLabel = ttk.Label(content, text = "g")
 modelTimeChangerLabel = ttk.Label(content, text = "Model time changer")
-symptomOneLabel = ttk.Label(content, text = "Symptom 1")
 symptomTwoLabel = ttk.Label(content, text = "Symptom 2")
 symptomThreeLabel = ttk.Label(content, text = "Symptom 3")
 symptomFourLabel = ttk.Label(content, text = "Symptom 4")
@@ -509,7 +498,6 @@ fUpperEntry = ttk.Entry(content, width = 8)
 fLowerEntry = ttk.Entry(content, width = 8)
 gUpperEntry = ttk.Entry(content, width = 8)
 gLowerEntry = ttk.Entry(content, width = 8)
-symptomOneEntry = ttk.Entry(content, width = 8)
 symptomTwoEntry = ttk.Entry(content, width = 8)
 symptomThreeEntry = ttk.Entry(content, width = 8)
 symptomFourEntry = ttk.Entry(content, width = 8)
@@ -560,7 +548,6 @@ fUpperEntry.insert(0,0.5)
 fLowerEntry.insert(0,0.5)
 gUpperEntry.insert(0,0.1)
 gLowerEntry.insert(0,0.1)
-symptomOneEntry.insert(0,10000)
 symptomTwoEntry.insert(0,100000)
 symptomThreeEntry.insert(0,1000000)
 symptomFourEntry.insert(0,10000000)
@@ -646,26 +633,25 @@ modelTimeChangerEntry.grid(row = rowIndex, column = 3)
 rowIndex += 1
 initialMcellCountLabel.grid(row = rowIndex, column = 0)
 initialMcellCountEntry.grid(row = rowIndex, column = 1)
-symptomOneLabel.grid(row = rowIndex, column = 2)
-symptomOneEntry.grid(row = rowIndex, column = 3)
-
-rowIndex += 1
-totalVaccineDosesLabel.grid(row = rowIndex, column = 0)
-totalVaccineDosesEntry.grid(row = rowIndex, column = 1)
 symptomTwoLabel.grid(row = rowIndex, column = 2)
 symptomTwoEntry.grid(row = rowIndex, column = 3)
 
 
+
 rowIndex += 1
-vaccineEfficacyLabel.grid(row = rowIndex, column = 0)
-vaccineEfficacyEntry.grid(row = rowIndex, column = 1)
+totalVaccineDosesLabel.grid(row = rowIndex, column = 0)
+totalVaccineDosesEntry.grid(row = rowIndex, column = 1)
 symptomThreeLabel.grid(row = rowIndex, column = 2)
 symptomThreeEntry.grid(row = rowIndex, column = 3)
 
 rowIndex += 1
-checkboxLabel.grid(row = rowIndex, column = 0)
+vaccineEfficacyLabel.grid(row = rowIndex, column = 0)
+vaccineEfficacyEntry.grid(row = rowIndex, column = 1)
 symptomFourLabel.grid(row = rowIndex, column = 2)
 symptomFourEntry.grid(row = rowIndex, column = 3)
+
+rowIndex += 1
+checkboxLabel.grid(row = rowIndex, column = 0)
 
 rowIndex += 1
 plotOnCheck.grid(row = rowIndex, column = 0, sticky = W)
