@@ -15,6 +15,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import *
 from tkinter import ttk
 
+import os
+
 import time
 
 def Parameters():
@@ -364,7 +366,7 @@ def multipleRuns():
     Parameters()
     print("Multiple runs started")
     print("Total number of runs {}".format(multipleRunsEntry.get()))
-    print("Run number 0")
+    print("Run number 1")
     populationPlot = main()
     n = 5
     # 0 = infected, 1 = symptomatic, 2 = immune, 3 = susepteble
@@ -373,7 +375,7 @@ def multipleRuns():
     immune      = np.array([[sum(populationPlot[2][i:i+n])//n for i in range(0,len(populationPlot[2]),n)]])
     susepteble  = np.array([[sum(populationPlot[3][i:i+n])//n for i in range(0,len(populationPlot[3]),n)]])
     for count in range(1,int(multipleRunsEntry.get())):
-        print("Run number {}".format(count))
+        print("Run number {}".format(count+1))
         populationPlot = main()
         n = 5
         infectedPlot    = np.array([[sum(populationPlot[0][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]])
@@ -412,8 +414,21 @@ def multipleRuns():
     modelConstantsTextLower = 'Lower: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.4f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aLower, Parameters.bLower, Parameters.cLower, Parameters.dLower, Parameters.eLower, Parameters.fLower, Parameters.gLower)
     plt.figtext(0.5, -0.05, modelConstantsTextLower, ha="center", fontsize=12) 
     modelConstantsTextUpper = 'Upper: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.3f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aUpper, Parameters.bLower, Parameters.cUpper, Parameters.dUpper, Parameters.eUpper, Parameters.fUpper, Parameters.gUpper)
-    plt.figtext(0.5, -0.10, modelConstantsTextUpper, ha="center", fontsize=12)  
+    plt.figtext(0.5, -0.10, modelConstantsTextUpper, ha="center", fontsize=12)
+    
+    if saveOn.get() == True:
+        filename = os.path.join('/Users\kevin\Documents\GitHub\Exjobb\image',filenameEntry.get())
+        plt.savefig(filename+'.png')
     plt.show()
+    
+    if saveOn.get() == True:
+        filename = os.path.join('/Users\kevin\Documents\GitHub\Exjobb\data',filenameEntry.get())
+        np.save(filename+'infected', infected)
+        np.save(filename+'symptomatic', symptomatic)
+        np.save(filename+'immune', immune)
+        np.save(filename+'susepteble', susepteble)
+    
+    
 
 
 def activate_enable_button():
@@ -422,6 +437,7 @@ def activate_enable_button():
     multipleRunsEntry.config(state=NORMAL if value_check.get() else DISABLED)
     breakOn.set(False)
     breakOnCheck.config(state=DISABLED if value_check.get() else NORMAL)
+    saveOn.set(True)
 
     
 # if __name__ == "__main__":
@@ -465,7 +481,7 @@ symptomTwoLabel = ttk.Label(content, text = "Symptom 2")
 symptomThreeLabel = ttk.Label(content, text = "Symptom 3")
 symptomFourLabel = ttk.Label(content, text = "Symptom 4")
 multipleRunsLabel = ttk.Label(content, text = "How many runs")
-
+filenameLabel = ttk.Label(content, text = "Name of simulation")
 
 simulationTimeEntry = ttk.Entry(content, width = 8)
 calculationTimerEntry = ttk.Entry(content, width = 8)
@@ -501,6 +517,7 @@ gLowerEntry = ttk.Entry(content, width = 8)
 symptomTwoEntry = ttk.Entry(content, width = 8)
 symptomThreeEntry = ttk.Entry(content, width = 8)
 symptomFourEntry = ttk.Entry(content, width = 8)
+filenameEntry = ttk.Entry(content, width = 20)
 
 plotOn = BooleanVar(value=1)
 plotOnCheck = ttk.Checkbutton(content, text = "Agent condition plot", variable = plotOn)
@@ -515,7 +532,8 @@ breakOnCheck = ttk.Checkbutton(content, text = "Break early", variable = breakOn
 value_check = IntVar()
 disableCheck = ttk.Checkbutton(content, variable=value_check, text='Activate multiple runs',
                               command=activate_enable_button)
-
+saveOn = BooleanVar(value = 0)
+saveOnCheck = ttk.Checkbutton(content, variable = saveOn, text = "Save run")
 
 
 # Insert default value
@@ -555,7 +573,7 @@ symptomFourEntry.insert(0,10000000)
 
 # Grid
 content.grid(row=0, column = 0, sticky=(N, S, E, W))
-runButton.grid(row = 0, column = 0, columnspan = 2)
+runButton.grid(row = 0, column = 0)
 runInitialImmuneSystemButton.grid(row = 0, column = 4)
 
 rowIndex = 1
@@ -668,9 +686,16 @@ symptomPlotCheck.grid(row = rowIndex, column = 0, sticky = W)
 rowIndex += 1
 breakOnCheck.grid(row= rowIndex, column = 0, sticky = W)
 
+
 rowIndex += 1
 disableCheck.grid(row = rowIndex, column = 0, sticky = W)
 multipleRunsButton.grid(row = rowIndex, column = 1)
+
+rowIndex += 1
+saveOnCheck.grid(row = rowIndex, column = 0, sticky = W)
+filenameLabel.grid(row = rowIndex, column = 1)
+filenameEntry.grid(row = rowIndex, column = 2, columnspan = 2)
+
 
 rowIndex += 1
 multipleRunsLabel.grid(row = rowIndex, column = 1)
