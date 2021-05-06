@@ -579,8 +579,8 @@ vaccineTimeDelayEntry.insert(0, 0)
 
 modelTimeChangerEntry.insert(0,18)
 modelTimeTotalEntry.insert(0,200)
-aUpperEntry.insert(0,3)
-aLowerEntry.insert(0,0.9)
+aUpperEntry.insert(0,2)
+aLowerEntry.insert(0,1)
 bUpperEntry.insert(0,0.5)
 bLowerEntry.insert(0,0.5)
 cUpperEntry.insert(0,0.1)
@@ -593,9 +593,9 @@ fUpperEntry.insert(0,0.5)
 fLowerEntry.insert(0,0.5)
 gUpperEntry.insert(0,0.1)
 gLowerEntry.insert(0,0.1)
-symptomTwoEntry.insert(0,100000)
-symptomThreeEntry.insert(0,1000000)
-symptomFourEntry.insert(0,10000000)
+symptomTwoEntry.insert(0,1000)
+symptomThreeEntry.insert(0,100000)
+symptomFourEntry.insert(0,1000000)
 
 
 # Grid
