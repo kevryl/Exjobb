@@ -229,11 +229,10 @@ def main():
     
     if vaccinationOn.get() == True:
         vaccinationList = list(range(Parameters.populationSize))
-        if diseaseModifyingOn.get() == True:
-            agentVirusFake = np.zeros(Parameters.populationSize)
-            agentPlasmaFake = np.zeros(Parameters.populationSize)
-            agentMcellFake = np.zeros(Parameters.populationSize)
-            modelConstantsVaccine = CreateModelConstant()
+        agentVirusFake = np.zeros(Parameters.populationSize)
+        agentPlasmaFake = np.zeros(Parameters.populationSize)
+        agentMcellFake = np.zeros(Parameters.populationSize)
+        modelConstantsVaccine = CreateModelConstant()
                 
         
         
@@ -459,7 +458,11 @@ def activate_enable_button():
     breakOnCheck.config(state=DISABLED if value_check.get() else NORMAL)
     saveOn.set(True)
 
-    
+def activate_enable_button_vaccination():
+    diseaseModifyingCheck.config(state=NORMAL if vaccinationOn.get() else DISABLED)
+    preventiveVaccineCheck.config(state=NORMAL if vaccinationOn.get() else DISABLED)
+
+
 # if __name__ == "__main__":
 # Create the base root and parent
 root = Tk()
@@ -544,11 +547,11 @@ filenameEntry = ttk.Entry(content, width = 20)
 plotOn = BooleanVar(value=1)
 plotOnCheck = ttk.Checkbutton(content, text = "Agent condition plot", variable = plotOn)
 vaccinationOn = BooleanVar(value = 0)
-vaccinationCheck = ttk.Checkbutton(content, text = "Vaccination", variable = vaccinationOn)
+vaccinationCheck = ttk.Checkbutton(content, text = "Vaccination", variable = vaccinationOn, command = activate_enable_button_vaccination)
 diseaseModifyingOn = BooleanVar(value = 0)
-diseaseModifyingCheck = ttk.Checkbutton(content, text = "Disease modifying", variable = diseaseModifyingOn)
+diseaseModifyingCheck = ttk.Checkbutton(content, text = "Disease modifying", variable = diseaseModifyingOn, state = DISABLED)
 preventiveVaccineOn = BooleanVar(value = 0)
-preventiveVaccineCheck = ttk.Checkbutton(content, text = "Preventive", variable = preventiveVaccineOn)
+preventiveVaccineCheck = ttk.Checkbutton(content, text = "Preventive", variable = preventiveVaccineOn, state = DISABLED)
 virusMeanOn = BooleanVar(value = 0)
 virusMeanCheck =  ttk.Checkbutton(content, text = "Virus mean plot", variable = virusMeanOn)
 symptomPlotOn = BooleanVar(value = 0)
