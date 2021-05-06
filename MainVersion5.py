@@ -287,17 +287,20 @@ def main():
                                     if r < Parameters.vaccineEfficacy:
                                         modelConstantsVaccine[5][ix] = modelConstantsVaccine[5][ix]*100
                                         modelConstantsVaccine[6][ix] = modelConstantsVaccine[6][ix]/10
-                                    agentVirusFake[ix] = 100 
+                                        
                                 if preventiveVaccineOn.get() == True:
-                                    agentInfectionProbability[ix] = agentInfectionProbability[ix]/5
+                                    r = np.random.rand()
+                                    if r < Parameters.vaccineEfficacy:
+                                        agentInfectionProbability[ix] = agentInfectionProbability[ix]/2
+                                            
+                                agentVirusFake[ix] = 100 
                                 removeIndex.append(index)
                                 vaccineDoses += 1
-                    if diseaseModifyingOn.get() == True:
-                        agentVirusFake, agentPlasmaFake, agentMcellFake = Model(modelConstantsVaccine, 
-                                                                                agentVirusFake, 
-                                                                                agentPlasmaFake, 
-                                                                                agentMcellFake)
-                        agentMcell += agentMcellFake
+                    agentVirusFake, agentPlasmaFake, agentMcellFake = Model(modelConstantsVaccine, 
+                                                                            agentVirusFake, 
+                                                                            agentPlasmaFake, 
+                                                                            agentMcellFake)
+                    agentMcell += agentMcellFake
                     vaccinationList = np.delete(vaccinationList,removeIndex)
                     vaccinationList.tolist()
                
