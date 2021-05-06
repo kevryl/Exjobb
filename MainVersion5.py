@@ -192,7 +192,7 @@ def Symptom(agentSymptom, plasma):
     return agentSymptom
 
 
-def DiseaseSpeading(gridStructure, virus, symptom):
+def DiseaseSpeading(gridStructure, virus, symptom, infectionProbabilityIndex):
     Parameters()
     for ix in range(Parameters.gridSizeSide):
         for jx in range(Parameters.gridSizeSide):
@@ -208,7 +208,8 @@ def DiseaseSpeading(gridStructure, virus, symptom):
                     for localInfectedIndex in localInfected:
                         r = np.random.rand()
                         meetingProbability = np.power(1/5,symptom[localInfectedIndex])
-                        if r < Parameters.infectionProbability*meetingProbability:
+                        infectionProbability = infectionProbabilityIndex[localSuseptebleIndex]
+                        if r < infectionProbability*meetingProbability:
                             virus[localSuseptebleIndex] = virus[localSuseptebleIndex] + virus[localInfectedIndex]*0.01
     return virus
 
@@ -224,13 +225,16 @@ def main():
     populationPlot = [[],[],[],[]]
     virusMeanPlot = []
     
+    agentInfectionProbability = np.ones(Parameters.populationSize)*Parameters.infectionProbability
+    
     if vaccinationOn.get() == True:
         vaccinationList = list(range(Parameters.populationSize))
-        agentVirusFake = np.zeros(Parameters.populationSize)
-        agentPlasmaFake = np.zeros(Parameters.populationSize)
-        agentMcellFake = np.zeros(Parameters.populationSize)
-        modelConstantsVaccine = CreateModelConstant()
-        modelConstantsVaccine[5] = modelConstantsVaccine[5]/10
+        if diseaseModifyingOn.get() == True:
+            agentVirusFake = np.zeros(Parameters.populationSize)
+            agentPlasmaFake = np.zeros(Parameters.populationSize)
+            agentMcellFake = np.zeros(Parameters.populationSize)
+            modelConstantsVaccine = CreateModelConstant()
+                
         
         
     if symptomPlotOn.get() == True:
@@ -269,7 +273,7 @@ def main():
                 gridStructure[rowIndex][columnIndex].append(agentIndex)
             
 
-            agentVirus = DiseaseSpeading(gridStructure, agentVirus, agentSymptom)
+            agentVirus = DiseaseSpeading(gridStructure, agentVirus, agentSymptom, agentInfectionProbability)
             
             if vaccinationOn.get() == True:
                 if timecycle > int(vaccineTimeDelayEntry.get()):
@@ -278,18 +282,22 @@ def main():
                     for index, ix in enumerate(vaccinationList):
                         if vaccineDoses < Parameters.totalVaccineDoses:
                             if all([agentVirus[ix] == 0, agentPlasma[ix] == 0]):
-                                r = np.random.rand()
-                                if r < Parameters.vaccineEfficacy:
-                                    modelConstantsVaccine[5][ix] = modelConstantsVaccine[5][ix]*100
-                                    modelConstantsVaccine[6][ix] = modelConstantsVaccine[6][ix]/10
-                                agentVirusFake[ix] = 100 
+                                if diseaseModifyingOn.get() == True:
+                                    r = np.random.rand()
+                                    if r < Parameters.vaccineEfficacy:
+                                        modelConstantsVaccine[5][ix] = modelConstantsVaccine[5][ix]*100
+                                        modelConstantsVaccine[6][ix] = modelConstantsVaccine[6][ix]/10
+                                    agentVirusFake[ix] = 100 
+                                if preventiveVaccineOn.get() == True:
+                                    agentInfectionProbability[ix] = agentInfectionProbability[ix]/5
                                 removeIndex.append(index)
-                                vaccineDoses = vaccineDoses + 1
-                    agentVirusFake, agentPlasmaFake, agentMcellFake = Model(modelConstantsVaccine, 
-                                                                            agentVirusFake, 
-                                                                            agentPlasmaFake, 
-                                                                            agentMcellFake)
-                    agentMcell += agentMcellFake
+                                vaccineDoses += 1
+                    if diseaseModifyingOn.get() == True:
+                        agentVirusFake, agentPlasmaFake, agentMcellFake = Model(modelConstantsVaccine, 
+                                                                                agentVirusFake, 
+                                                                                agentPlasmaFake, 
+                                                                                agentMcellFake)
+                        agentMcell += agentMcellFake
                     vaccinationList = np.delete(vaccinationList,removeIndex)
                     vaccinationList.tolist()
                
@@ -343,9 +351,9 @@ def main():
         plt.xlabel('Timecycles', fontsize=12)
         plt.ylabel('Number of agents', fontsize=12)
         plt.legend()
-        modelConstantsTextLower = 'Lower: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.3f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aLower, Parameters.bLower, Parameters.cLower, Parameters.dLower, Parameters.eLower, Parameters.fLower, Parameters.gLower)
+        modelConstantsTextLower = 'Lower: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.4f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aLower, Parameters.bLower, Parameters.cLower, Parameters.dLower, Parameters.eLower, Parameters.fLower, Parameters.gLower)
         plt.figtext(0.5, -0.05, modelConstantsTextLower, ha="center", fontsize=12) 
-        modelConstantsTextUpper = 'Upper: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.3f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aUpper, Parameters.bLower, Parameters.cUpper, Parameters.dUpper, Parameters.eUpper, Parameters.fUpper, Parameters.gUpper)
+        modelConstantsTextUpper = 'Upper: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.4f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aUpper, Parameters.bLower, Parameters.cUpper, Parameters.dUpper, Parameters.eUpper, Parameters.fUpper, Parameters.gUpper)
         plt.figtext(0.5, -0.10, modelConstantsTextUpper, ha="center", fontsize=12)  
         plt.show()
     
@@ -530,6 +538,10 @@ plotOn = BooleanVar(value=1)
 plotOnCheck = ttk.Checkbutton(content, text = "Agent condition plot", variable = plotOn)
 vaccinationOn = BooleanVar(value = 0)
 vaccinationCheck = ttk.Checkbutton(content, text = "Vaccination", variable = vaccinationOn)
+diseaseModifyingOn = BooleanVar(value = 0)
+diseaseModifyingCheck = ttk.Checkbutton(content, text = "Disease modifying", variable = diseaseModifyingOn)
+preventiveVaccineOn = BooleanVar(value = 0)
+preventiveVaccineCheck = ttk.Checkbutton(content, text = "Preventive", variable = preventiveVaccineOn)
 virusMeanOn = BooleanVar(value = 0)
 virusMeanCheck =  ttk.Checkbutton(content, text = "Virus mean plot", variable = virusMeanOn)
 symptomPlotOn = BooleanVar(value = 0)
@@ -688,6 +700,11 @@ plotOnCheck.grid(row = rowIndex, column = 0, sticky = W)
 
 rowIndex += 1
 vaccinationCheck.grid(row = rowIndex, column = 0, sticky = W)
+
+rowIndex += 1
+diseaseModifyingCheck.grid(row = rowIndex, column = 0, sticky = W)
+preventiveVaccineCheck.grid(row = rowIndex, column = 1, sticky = W)
+
 
 rowIndex += 1
 virusMeanCheck.grid(row = rowIndex, column = 0, sticky = W)
