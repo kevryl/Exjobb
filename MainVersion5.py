@@ -235,7 +235,8 @@ def main():
         
     if symptomPlotOn.get() == True:
         symptomPlot = []
-
+        
+    timecycle = 0
     ##### SIMULAION START #####        
     for timeTicker in range(Parameters.simulationTime*Parameters.calculationTimer):
         agentMovement = np.transpose([np.cos(agentRotation), np.sin(agentRotation)]*agentSpeed)
@@ -250,6 +251,9 @@ def main():
         agentRotation = np.random.uniform(agentRotation - np.pi/4,
                                           agentRotation + np.pi/4)
         if timeTicker % Parameters.calculationTimer == 0 and timeTicker != 0:
+            timecycle += 1
+            
+            
             agentVirus, agentPlasma, agentMcell = Model(modelConstants, 
                                                         agentVirus, 
                                                         agentPlasma, 
@@ -268,26 +272,27 @@ def main():
             agentVirus = DiseaseSpeading(gridStructure, agentVirus, agentSymptom)
             
             if vaccinationOn.get() == True:
-                vaccineDoses = 0
-                removeIndex= []
-                for index, ix in enumerate(vaccinationList):
-                    if vaccineDoses < Parameters.totalVaccineDoses:
-                        if all([agentVirus[ix] == 0, agentPlasma[ix] == 0]):
-                            r = np.random.rand()
-                            if r < Parameters.vaccineEfficacy:
-                                modelConstantsVaccine[5][ix] = modelConstantsVaccine[5][ix]*100
-                                modelConstantsVaccine[6][ix] = modelConstantsVaccine[6][ix]/10
-                            agentVirusFake[ix] = 100 
-                            removeIndex.append(index)
-                            vaccineDoses = vaccineDoses + 1
-                agentVirusFake, agentPlasmaFake, agentMcellFake = Model(modelConstantsVaccine, 
-                                                                        agentVirusFake, 
-                                                                        agentPlasmaFake, 
-                                                                        agentMcellFake)
-                agentMcell += agentMcellFake
-                vaccinationList = np.delete(vaccinationList,removeIndex)
-                vaccinationList.tolist()
-                
+                if timecycle > int(vaccineTimeDelayEntry.get()):
+                    vaccineDoses = 0
+                    removeIndex= []
+                    for index, ix in enumerate(vaccinationList):
+                        if vaccineDoses < Parameters.totalVaccineDoses:
+                            if all([agentVirus[ix] == 0, agentPlasma[ix] == 0]):
+                                r = np.random.rand()
+                                if r < Parameters.vaccineEfficacy:
+                                    modelConstantsVaccine[5][ix] = modelConstantsVaccine[5][ix]*100
+                                    modelConstantsVaccine[6][ix] = modelConstantsVaccine[6][ix]/10
+                                agentVirusFake[ix] = 100 
+                                removeIndex.append(index)
+                                vaccineDoses = vaccineDoses + 1
+                    agentVirusFake, agentPlasmaFake, agentMcellFake = Model(modelConstantsVaccine, 
+                                                                            agentVirusFake, 
+                                                                            agentPlasmaFake, 
+                                                                            agentMcellFake)
+                    agentMcell += agentMcellFake
+                    vaccinationList = np.delete(vaccinationList,removeIndex)
+                    vaccinationList.tolist()
+               
             totalInfected = 0
             totalSymptomatic = 0
             totalImmune = 0
@@ -413,7 +418,7 @@ def multipleRuns():
     plt.ylabel('Agents')
     modelConstantsTextLower = 'Lower: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.4f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aLower, Parameters.bLower, Parameters.cLower, Parameters.dLower, Parameters.eLower, Parameters.fLower, Parameters.gLower)
     plt.figtext(0.5, -0.05, modelConstantsTextLower, ha="center", fontsize=12) 
-    modelConstantsTextUpper = 'Upper: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.3f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aUpper, Parameters.bLower, Parameters.cUpper, Parameters.dUpper, Parameters.eUpper, Parameters.fUpper, Parameters.gUpper)
+    modelConstantsTextUpper = 'Upper: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.4f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aUpper, Parameters.bLower, Parameters.cUpper, Parameters.dUpper, Parameters.eUpper, Parameters.fUpper, Parameters.gUpper)
     plt.figtext(0.5, -0.10, modelConstantsTextUpper, ha="center", fontsize=12)
     
     if saveOn.get() == True:
@@ -465,6 +470,7 @@ initialPlasmaCountLabel = ttk.Label(content, text = "Initial plasma count")
 initialMcellCountLabel = ttk.Label(content, text = "Initial mcell count")
 totalVaccineDosesLabel = ttk.Label(content, text = "Total vaccine doses per CT")
 vaccineEfficacyLabel = ttk.Label(content, text = "Vaccine efficacy")
+vaccineTimeDelayLabel = ttk.Label(content, text = "Vaccine time delay")
 
 modelTimeTotalLabel = ttk.Label(content, text = "Total model time")
 lowerParameterLabel = ttk.Label(content, text = "lower")
@@ -495,6 +501,7 @@ initialPlasmaCountEntry = ttk.Entry(content, width = 8)
 initialMcellCountEntry = ttk.Entry(content, width = 8)
 totalVaccineDosesEntry = ttk.Entry(content, width = 8)
 vaccineEfficacyEntry = ttk.Entry(content, width = 8)
+vaccineTimeDelayEntry = ttk.Entry(content, width = 8)
 multipleRunsEntry = ttk.Entry(content, width = 8)
 
 
@@ -549,6 +556,7 @@ initialPlasmaCountEntry.insert(0,0)
 initialMcellCountEntry.insert(0,10)
 totalVaccineDosesEntry.insert(0,5)
 vaccineEfficacyEntry.insert(0,1)
+vaccineTimeDelayEntry.insert(0, 0)
 
 modelTimeChangerEntry.insert(0,18)
 modelTimeTotalEntry.insert(0,200)
@@ -667,6 +675,10 @@ vaccineEfficacyLabel.grid(row = rowIndex, column = 0)
 vaccineEfficacyEntry.grid(row = rowIndex, column = 1)
 symptomFourLabel.grid(row = rowIndex, column = 2)
 symptomFourEntry.grid(row = rowIndex, column = 3)
+
+rowIndex += 1
+vaccineTimeDelayLabel.grid(row = rowIndex, column = 0)
+vaccineTimeDelayEntry.grid (row = rowIndex, column = 1)
 
 rowIndex += 1
 checkboxLabel.grid(row = rowIndex, column = 0)
