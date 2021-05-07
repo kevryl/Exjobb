@@ -86,16 +86,16 @@ virus = 100
 plasma = 0
 mcell = 3
 
-parameterTimeChanger = 10
-a = 1/parameterTimeChanger #np.random.normal(2,0.2)
+parameterTimeChanger = 1000000
+a = 1000/parameterTimeChanger #np.random.normal(2,0.2)
 b = 1/parameterTimeChanger
-c = 0.36/parameterTimeChanger # np.random.normal(1,0.1)
-d = 0.00001/parameterTimeChanger
+c = 0.1/parameterTimeChanger # np.random.normal(1,0.1)
+d = 0.01/parameterTimeChanger
 e = 4/parameterTimeChanger
 f = 0.5/parameterTimeChanger
 g = 0.010/parameterTimeChanger
 
-time = 200
+time = 200000
 
 alphaValue = 0.5
 # for c in [0.1, 1]:
@@ -154,7 +154,7 @@ e = 4/parameterTimeChanger
 f = 0.5/parameterTimeChanger
 g = 0.010/parameterTimeChanger
 
-time = 5000
+time = 100
 
 alphaValue = 0.1
 for c in [0.38] :#np.linspace(0.4,0.3,10):
@@ -171,3 +171,79 @@ plt.xlabel('Time cycle')
 plt.ylabel('Population')
     
 
+# %%
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+def Model(a,b,c,d,e,f,g,time, virusStart, plasmaStart, mcellStart):
+    virus = [virusStart]
+    plasma = [plasmaStart]
+    mcell = [mcellStart]
+    
+    virusTemp = virusStart
+    plasmaTemp = plasmaStart
+    mcellTemp = mcellStart
+    
+    for ix in range(time):
+        if virusTemp < 1e7:
+            dvdt = a*virusTemp - b*plasmaTemp
+            dpdt = virusTemp*(c + d*mcellTemp) - e*plasmaTemp
+            dmdt = f*plasmaTemp - g*mcellTemp
+            virusTemp = virusTemp + dvdt
+            plasmaTemp = plasmaTemp + dpdt
+            mcellTemp = mcellTemp + dmdt
+            if virusTemp < 10: virusTemp = 0
+            if plasmaTemp < 10: plasmaTemp = 0
+            if mcellTemp < 10: mcellTemp = 0
+        else: 
+            virusTemp = 1e8
+        virus.append(virusTemp)
+        plasma.append(plasmaTemp)
+        mcell.append(mcellTemp)    
+    return virus, plasma, mcell
+
+virus = 1000
+plasma = 0
+mcell = 3
+
+
+a = 1/parameterTimeChanger #np.random.normal(2,0.2)
+b = 1/parameterTimeChanger
+c = 0.1/parameterTimeChanger # np.random.normal(1,0.1)
+d = 0.00001/parameterTimeChanger
+e = 4/parameterTimeChanger
+f = 0.5/parameterTimeChanger
+g = 0.010/parameterTimeChanger
+
+case1 = np.array([1,1,1,0.001,5,0.5,0.1])/10
+case2 = np.array([4,1,1,0.001,5,0.5,0.1])/40
+case3 = np.array([1,1,100,0.0001,1,5,1])/150
+case4 = np.array([1,2,100,0.0001,1,0.1,0.1])/150
+case5 = np.array([1000,2,0.1,1,10,0.5,10])/1000
+case6 = np.array([1000,2,0.1,1,10,0.5,10])/3000
+case8 = np.array([1,1,4,0.0002,5.5,0.5,0.1])/3
+
+time = 200
+
+alphaValue = 0.1
+for a,b,c,d,e,f,g in [case1,case2,case3,case4,case5,case6,case8]:
+    virusPlot, plasmaPlot, mcellPlot = Model(a,b,c,d,e,f,g,time, virus, plasma, mcell)
+    
+    plt.plot(range(time+1),virusPlot, c = 'black')
+    # plt.plot(range(time+1),plasmaPlot, label = c)+
+    # plt.plot(range(time+1),mcellPlot, c = 'green')
+    alphaValue += 0.1
+# plt.legend(['case1','case2','case3','case4','case5','case6','case8'])
+plt.text(30,50, '1')
+plt.text(10,10, '1')
+plt.text(55,25, '2')
+plt.text(78,35, '2')
+plt.text(130,5e3, '4')
+plt.text(16,2e6, '3')
+
+plt.yscale('log')
+plt.axis([0,time,1,1e7])
+# plt.xscale('log')
+plt.xlabel('Time')
+plt.ylabel('Antigen')
