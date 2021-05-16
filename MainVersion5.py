@@ -198,19 +198,19 @@ def DiseaseSpeading(gridStructure, virus, symptom, infectionProbabilityIndex):
         for jx in range(Parameters.gridSizeSide):
             if gridStructure[ix][jx] != [] and len(gridStructure[ix][jx]) != 1:
                 localInfected = []
-                localSusepteble = []
+                localSusceptible = []
                 for agentIndex in gridStructure[ix][jx]:
                     if virus[agentIndex] != 0:
                         localInfected.append(agentIndex)
                     else:
-                        localSusepteble.append(agentIndex)
-                for localSuseptebleIndex in localSusepteble:
+                        localSusceptible.append(agentIndex)
+                for localSusceptibleIndex in localSusceptible:
                     for localInfectedIndex in localInfected:
                         r = np.random.rand()
                         meetingProbability = np.power(1/5,symptom[localInfectedIndex])
-                        infectionProbability = infectionProbabilityIndex[localSuseptebleIndex]
+                        infectionProbability = infectionProbabilityIndex[localSusceptibleIndex]
                         if r < infectionProbability*meetingProbability:
-                            virus[localSuseptebleIndex] = virus[localSuseptebleIndex] + virus[localInfectedIndex]*0.01
+                            virus[localSusceptibleIndex] = virus[localSusceptibleIndex] + virus[localInfectedIndex]*0.01
     return virus
 
 
@@ -306,7 +306,7 @@ def main():
             totalInfected = 0
             totalSymptomatic = 0
             totalImmune = 0
-            totalSusepteble = 0
+            totalSusceptible = 0
             for ix in range(Parameters.populationSize):
                 if agentVirus[ix] > 10 :
                     totalInfected += +1
@@ -315,7 +315,7 @@ def main():
                 if  agentMcell[ix] > 50000: 
                     totalImmune +=  1
                 if all([agentVirus[ix] < 10, agentPlasma[ix] < Parameters.symptomTwo, agentMcell[ix] < 50000]):
-                    totalSusepteble += 1         
+                    totalSusceptible += 1         
             
             if breakOn.get() == True:
                 if totalInfected == 0:
@@ -325,7 +325,7 @@ def main():
             populationPlot[0].append(totalInfected)
             populationPlot[1].append(totalSymptomatic)
             populationPlot[2].append(totalImmune)
-            populationPlot[3].append(totalSusepteble)
+            populationPlot[3].append(totalSusceptible)
             
             if symptomPlotOn.get() == True:
                 symptomPlot.append(agentSymptom)
@@ -344,12 +344,12 @@ def main():
         infectedPlot    = [sum(populationPlot[0][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]
         symptomaticPlot = [sum(populationPlot[1][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]
         immunePlot      = [sum(populationPlot[2][i:i+n])//n for i in range(0,len(populationPlot[2]),n)]
-        susepteblePlot  = [sum(populationPlot[3][i:i+n])//n for i in range(0,len(populationPlot[3]),n)]
-        plotLength = np.linspace(0,len(populationPlot[0]),len(susepteblePlot))
+        susceptiblePlot  = [sum(populationPlot[3][i:i+n])//n for i in range(0,len(populationPlot[3]),n)]
+        plotLength = np.linspace(0,len(populationPlot[0]),len(susceptiblePlot))
         plt.plot(plotLength[:-1], infectedPlot[:-1], 'r', label = 'infected')
         plt.plot(plotLength[:-1], immunePlot[:-1], 'b', label = 'immune')
         plt.plot(plotLength[:-1], symptomaticPlot[:-1], 'orange', label = 'symptomatic')    
-        plt.plot(plotLength[:-1], susepteblePlot[:-1], 'g', label = 'susepteble')
+        plt.plot(plotLength[:-1], susceptiblePlot[:-1], 'g', label = 'susceptible')
         plt.xlabel('Timecycles', fontsize=12)
         plt.ylabel('Number of agents', fontsize=12)
         plt.legend()
@@ -386,11 +386,11 @@ def multipleRuns():
     print("Run number 1")
     populationPlot = main()
     n = 5
-    # 0 = infected, 1 = symptomatic, 2 = immune, 3 = susepteble
+    # 0 = infected, 1 = symptomatic, 2 = immune, 3 = susceptible
     infected    = np.array([[sum(populationPlot[0][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]])
     symptomatic = np.array([[sum(populationPlot[1][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]])
     immune      = np.array([[sum(populationPlot[2][i:i+n])//n for i in range(0,len(populationPlot[2]),n)]])
-    susepteble  = np.array([[sum(populationPlot[3][i:i+n])//n for i in range(0,len(populationPlot[3]),n)]])
+    susceptible  = np.array([[sum(populationPlot[3][i:i+n])//n for i in range(0,len(populationPlot[3]),n)]])
     for count in range(1,int(multipleRunsEntry.get())):
         print("Run number {}".format(count+1))
         populationPlot = main()
@@ -398,26 +398,26 @@ def multipleRuns():
         infectedPlot    = np.array([[sum(populationPlot[0][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]])
         symptomaticPlot = np.array([[sum(populationPlot[1][i:i+n])//n for i in range(0,len(populationPlot[1]),n)]])
         immunePlot      = np.array([[sum(populationPlot[2][i:i+n])//n for i in range(0,len(populationPlot[2]),n)]])
-        susepteblePlot  = np.array([[sum(populationPlot[3][i:i+n])//n for i in range(0,len(populationPlot[3]),n)]])
+        susceptiblePlot  = np.array([[sum(populationPlot[3][i:i+n])//n for i in range(0,len(populationPlot[3]),n)]])
         infected    = np.append(infected,infectedPlot, axis = 0)
         symptomatic = np.append(symptomatic,symptomaticPlot, axis = 0)
         immune      = np.append(immune,immunePlot, axis = 0)
-        susepteble  = np.append(susepteble,susepteblePlot, axis = 0)
+        susceptible  = np.append(susceptible,susceptiblePlot, axis = 0)
     
     infectedError = np.std(infected,axis=0)
     symptomaticError = np.std(symptomatic,axis=0)
     immuneError = np.std(immune,axis=0)
-    suseptebleError = np.std(susepteble,axis=0)
+    susceptibleError = np.std(susceptible,axis=0)
     infectedMean = np.mean(infected,axis = 0)
     symptomaticMean = np.mean(symptomatic,axis = 0)
     immuneMean = np.mean(immune,axis = 0)
-    suseptebleMean = np.mean(susepteble,axis = 0)
+    susceptibleMean = np.mean(susceptible,axis = 0)
     plotLength = np.linspace(0, Parameters.simulationTime,len(infectedMean))
 
     for mean, error, color, text in [[infectedMean, infectedError, 'red', 'infected'],\
                                [symptomaticMean, symptomaticError, 'orange', 'symptomatic'],\
                                    [immuneMean, immuneError, 'blue', 'immune'],\
-                                [suseptebleMean, suseptebleError, 'green', 'susepteble']]:
+                                [susceptibleMean, susceptibleError, 'green', 'susceptible']]:
         plt.plot(plotLength[:-1], mean[:-1], c = color, label = text)
         ciLower = mean - 2*error
         ciLowerBounded = np.where(ciLower>0,ciLower,0)
@@ -445,7 +445,7 @@ def multipleRuns():
         np.save(filename+'infected', infected)
         np.save(filename+'symptomatic', symptomatic)
         np.save(filename+'immune', immune)
-        np.save(filename+'suscepteble', susepteble)
+        np.save(filename+'susceptible', susceptible)
     
     
 
