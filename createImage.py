@@ -8,13 +8,13 @@ Created on Sun May 16 09:23:49 2021
 import numpy as np
 import matplotlib.pyplot as plt
 
-file = 'lowDensity10DMO'
+file = 'basecaseNOVAC'
 populationSize = 5000
 
-immune = np.load('data/'+file+'immune.npy')
-infected = np.load('data/'+file+'infected.npy')
-susceptible = np.load('data/'+file+'susepteble.npy')
-symptomatic = np.load('data/'+file+'symptomatic.npy')
+immune = np.load(file+'immune.npy')
+infected = np.load(file+'infected.npy')
+susceptible = np.load(file+'susceptible.npy')
+symptomatic = np.load(file+'symptomatic.npy')
 
 infectedError = np.std(infected,axis=0)
 symptomaticError = np.std(symptomatic,axis=0)

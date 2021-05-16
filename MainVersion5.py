@@ -414,10 +414,10 @@ def multipleRuns():
     susceptibleMean = np.mean(susceptible,axis = 0)
     plotLength = np.linspace(0, Parameters.simulationTime,len(infectedMean))
 
-    for mean, error, color, text in [[infectedMean, infectedError, 'red', 'infected'],\
-                               [symptomaticMean, symptomaticError, 'orange', 'symptomatic'],\
-                                   [immuneMean, immuneError, 'blue', 'immune'],\
-                                [susceptibleMean, susceptibleError, 'green', 'susceptible']]:
+    for mean, error, color, text in [[infectedMean, infectedError, 'red', 'Infected'],\
+                               [symptomaticMean, symptomaticError, 'orange', 'Symptomatic'],\
+                                   [immuneMean, immuneError, 'blue', 'Immune'],\
+                                [susceptibleMean, susceptibleError, 'green', 'Susceptible']]:
         plt.plot(plotLength[:-1], mean[:-1], c = color, label = text)
         ciLower = mean - 2*error
         ciLowerBounded = np.where(ciLower>0,ciLower,0)
@@ -426,8 +426,9 @@ def multipleRuns():
         plt.fill_between(plotLength[:-1], ciLowerBounded[:-1], ciUpperBounded[:-1], color = color, alpha = 0.3)
      
     plt.legend()
-    plt.xlabel('Time cycle')
-    plt.ylabel('Agents')
+    plt.xlabel('Time cycle', fontsize = 15)
+    plt.ylabel('Agents', fontsize = 15)
+    plt.grid()
     modelConstantsTextLower = 'Lower: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.4f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aLower, Parameters.bLower, Parameters.cLower, Parameters.dLower, Parameters.eLower, Parameters.fLower, Parameters.gLower)
     plt.figtext(0.5, -0.05, modelConstantsTextLower, ha="center", fontsize=12) 
     modelConstantsTextUpper = 'Upper: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.4f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(Parameters.aUpper, Parameters.bLower, Parameters.cUpper, Parameters.dUpper, Parameters.eUpper, Parameters.fUpper, Parameters.gUpper)
