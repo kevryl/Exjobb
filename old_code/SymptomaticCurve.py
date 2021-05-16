@@ -75,9 +75,9 @@ for count, c in enumerate([0.2/parameterTimeChanger,1/parameterTimeChanger]):
         mcellPlot.append(mcell)
         if maxPlasma < plasmaPlot[ix]: maxPlasma = plasmaPlot[ix]
     if count == 0:
-        plt.plot(np.linspace(0.06,1,time+1),np.array(plasmaPlot)/maxPlasma*4, label = 'Upper plasma')
+        plt.plot(np.linspace(0.06,1,time+1),np.array(plasmaPlot)/maxPlasma*4, label = 'Agent A plasma')
     else:
-        plt.plot(np.linspace(0.06,1,time+1),np.array(plasmaPlot)/maxPlasma*4, label = 'Lower plasma')
+        plt.plot(np.linspace(0.06,1,time+1),np.array(plasmaPlot)/maxPlasma*4, label = 'Agent B plasma')
 
 
 pLinear = np.linspace(0.06,1)
@@ -89,14 +89,12 @@ plt.plot([0,1],[3,3], 'k--', alpha = 0.7)
 
 
 
-plt.text(0,0.2,'1: No symptom')
-plt.text(0.0,1.1,'2: Symptom expressed weakly')
-plt.text(0.0,2.1,'3: Moderate symptom')
-plt.text(0.0,3.5,'4: Sharply')
-plt.text(0.0,3.3,'   expressed')
-plt.text(0.0,3.1,'   symptom')
-
+plt.text(0,0.2,'1: Asymptomatic')
+plt.text(0.0,1.1,'2: Weak symptoms')
+plt.text(0.0,2.1,'3: Moderate symptoms')
+plt.text(0.0,3.1,'4: Severe symptoms')
 
 plt.legend()
+plt.axis('off')
 # plt.yscale('log')
 

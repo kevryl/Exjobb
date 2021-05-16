@@ -445,7 +445,7 @@ def multipleRuns():
         np.save(filename+'infected', infected)
         np.save(filename+'symptomatic', symptomatic)
         np.save(filename+'immune', immune)
-        np.save(filename+'susepteble', susepteble)
+        np.save(filename+'suscepteble', susepteble)
     
     
 

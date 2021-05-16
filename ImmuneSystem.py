@@ -8,9 +8,9 @@ Created on Mon Mar 22 10:39:44 2021
 import numpy as np
 import matplotlib.pyplot as plt
 
-virus = 10000
+virus = 100
 tcell = 0
-mcell = 50000
+mcell = 10
 
 parameterTimeChanger = 5
 a = 1/parameterTimeChanger #np.random.normal(2,0.2)
@@ -26,7 +26,7 @@ tcellPlot = [tcell]
 mcellPlot = [mcell]
 
 
-time = 100
+time = 1000
 for ix in range(time):
     dvdt = a*virus - b*tcell
     dTdt = virus*(c + d*mcell) - e*tcell
@@ -47,7 +47,7 @@ for ix in range(time):
 plt.plot(range(time+1),virusPlot,label = 'virus', c = 'red')
 plt.plot(range(time+1),tcellPlot, label = 'plasma', c = 'blue')
 plt.plot(range(time+1),mcellPlot, label = 'mcell', c = 'green')
-modelConstantsTextLower = 'Immune: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.5f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(a*parameterTimeChanger, b*parameterTimeChanger, c*parameterTimeChanger, d*parameterTimeChanger, e*parameterTimeChanger, f*parameterTimeChanger, g*parameterTimeChanger)
+modelConsta ntsTextLower = 'Immune: a= {:.2f}, b= {:.2f}, c= {:.2f}, d= {:.5f}, e= {:.2f}, f= {:.2f}, g= {:.2f}'.format(a*parameterTimeChanger, b*parameterTimeChanger, c*parameterTimeChanger, d*parameterTimeChanger, e*parameterTimeChanger, f*parameterTimeChanger, g*parameterTimeChanger)
 plt.figtext(0.5, -0.05, modelConstantsTextLower, ha="center", fontsize=12) 
 
 plt.legend()
@@ -74,9 +74,9 @@ def Model(a,b,c,d,e,f,g,time, virusStart, plasmaStart, mcellStart):
         virusTemp = virusTemp + dvdt
         plasmaTemp = plasmaTemp + dpdt
         mcellTemp = mcellTemp + dmdt
-        if virusTemp < 10: virusTemp = 0
-        if plasmaTemp < 10: plasmaTemp = 0
-        if mcellTemp < 10: mcellTemp = 0
+        if virusTemp < 20: virusTemp = 0
+        if plasmaTemp < 5: plasmaTemp = 0
+        if mcellTemp < 2: mcellTemp = 2
         virus.append(virusTemp)
         plasma.append(plasmaTemp)
         mcell.append(mcellTemp)    
@@ -86,18 +86,18 @@ virus = 100
 plasma = 0
 mcell = 3
 
-parameterTimeChanger = 1000000
-a = 1000/parameterTimeChanger #np.random.normal(2,0.2)
-b = 1/parameterTimeChanger
+parameterTimeChanger = 10
+a = 1/parameterTimeChanger #np.random.normal(2,0.2)
+b = 0.5/parameterTimeChanger
 c = 0.1/parameterTimeChanger # np.random.normal(1,0.1)
-d = 0.01/parameterTimeChanger
-e = 4/parameterTimeChanger
+d = 0.001/parameterTimeChanger
+e = 3/parameterTimeChanger
 f = 0.5/parameterTimeChanger
-g = 0.010/parameterTimeChanger
+g = 0.1/parameterTimeChanger
 
-time = 200000
+time = 200
 
-alphaValue = 0.5
+alphaValue = 1
 # for c in [0.1, 1]:
 virusPlot, plasmaPlot, mcellPlot = Model(a,b,c,d,e,f,g,time, virus, plasma, mcell)
 plt.plot(range(time+1),virusPlot, c = 'red', alpha = alphaValue)
@@ -133,9 +133,9 @@ def Model(a,b,c,d,e,f,g,time, virusStart, plasmaStart, mcellStart):
         virusTemp = virusTemp + dvdt
         plasmaTemp = plasmaTemp + dpdt
         mcellTemp = mcellTemp + dmdt
-        if virusTemp < 10: virusTemp = 0
-        if plasmaTemp < 10: plasmaTemp = 0
-        if mcellTemp < 10: mcellTemp = 0
+        if virusTemp < 20: virusTemp = 0
+        if plasmaTemp < 5: plasmaTemp = 0
+        if mcellTemp < 2: mcellTemp = 2
         virus.append(virusTemp)
         plasma.append(plasmaTemp)
         mcell.append(mcellTemp)    
@@ -143,24 +143,24 @@ def Model(a,b,c,d,e,f,g,time, virusStart, plasmaStart, mcellStart):
 
 virus = 100
 plasma = 0
-mcell = 3
+mcell = 10
 
-parameterTimeChanger = 10
+parameterTimeChanger = 18
 a = 1/parameterTimeChanger #np.random.normal(2,0.2)
-b = 1/parameterTimeChanger
+b = 0.5/parameterTimeChanger
 c = 0.1/parameterTimeChanger # np.random.normal(1,0.1)
-d = 0.00001/parameterTimeChanger
-e = 4/parameterTimeChanger
+d = 0.001/parameterTimeChanger
+e = 3/parameterTimeChanger
 f = 0.5/parameterTimeChanger
-g = 0.010/parameterTimeChanger
+g = 0.1/parameterTimeChanger
 
-time = 100
+time = 200
 
 alphaValue = 0.1
-for c in [0.38] :#np.linspace(0.4,0.3,10):
+for a in [1/parameterTimeChanger,2/parameterTimeChanger] :#np.linspace(0.4,0.3,10):
     virusPlot, plasmaPlot, mcellPlot = Model(a,b,c,d,e,f,g,time, virus, plasma, mcell)
     plt.plot(range(time+1),virusPlot, c = 'red')
-    plt.plot(range(time+1),plasmaPlot, label = c)
+    plt.plot(range(time+1),plasmaPlot, c= 'blue', label = a)
     plt.plot(range(time+1),mcellPlot, c = 'green')
     alphaValue += 0.1
 plt.legend(['virus','plasm','mcell'])
