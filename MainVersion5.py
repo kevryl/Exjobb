@@ -434,6 +434,8 @@ def multipleRuns():
     plt.figtext(0.5, -0.10, modelConstantsTextUpper, ha="center", fontsize=12)
     vaccineText = 'Vaccine {}, preventive {}, disease modifying {}'.format(vaccinationOn.get(),preventiveVaccineOn.get(),diseaseModifyingOn.get())
     plt.figtext(0.5, -0.15, vaccineText, ha="center", fontsize=12)
+    if np.argmax(infectedMean == 0) != 0:
+        plt.arrow(np.argmax(infectedMean < 1)*5, 10, 0, 200)    
     
     if saveOn.get() == True:
         filename = os.path.join('/Users\kevin\Documents\GitHub\Exjobb\image',filenameEntry.get())
