@@ -8,7 +8,7 @@ Created on Sun May 16 09:23:49 2021
 import numpy as np
 import matplotlib.pyplot as plt
 
-file = 'basecaseNOVAC'
+file = 'data/basecase10DMO'
 populationSize = 5000
 
 immune = np.load(file+'immune.npy')
@@ -39,7 +39,7 @@ for mean, error, color, text in [[infectedMean, infectedError, 'red', 'Infected'
 
 if np.argmax(infectedMean < 1) != 0:
     plt.arrow(np.argmax(infectedMean < 1)*5, 10, 0, 200) 
-plt.legend()
+plt.legend() # loc = to change location
 plt.xlabel('Time cycle', fontsize = 15)
 plt.ylabel('Agents', fontsize = 15)
 plt.grid()
