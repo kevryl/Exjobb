@@ -148,11 +148,11 @@ for mcell in [2,50000]:
     if count == 0:
         plt.plot(range(time+1),virusPlot, c = 'red', alpha = alphaValue)
         plt.plot(range(time+1),plasmaPlot, c = 'blue', alpha = alphaValue)
-        plt.plot(range(time+1),mcellPlot, c = 'green', alpha = alphaValue, label = 'No M cells')
+        plt.plot(range(time+1),mcellPlot, c = 'green', alpha = alphaValue, label = 'Agent A')
     if count == 1:
         plt.plot(range(time+1),virusPlot, c = 'red', alpha = alphaValue, linestyle = '--')
         plt.plot(range(time+1),plasmaPlot, c = 'blue', alpha = alphaValue, linestyle = '--')
-        plt.plot(range(time+1),mcellPlot, c = 'green', alpha = alphaValue, linestyle = '--', label = 'm$_{immune}$')
+        plt.plot(range(time+1),mcellPlot, c = 'green', alpha = alphaValue, linestyle = '--', label = 'Agent B')
     
     count += 1
 plt.legend(fontsize = 12, loc = 'lower right')
@@ -161,6 +161,74 @@ plt.yscale('log')
 plt.xlabel('Time cycle', fontsize = 15)
 plt.ylabel('Cells', fontsize = 15)
 plt.grid()
+
+#%% REINFECTION
+import numpy as np
+import matplotlib.pyplot as plt
+
+def Model(a,b,c,d,e,f,g,time, virusStart, plasmaStart, mcellStart):
+    virus = [virusStart]
+    plasma = [plasmaStart]
+    mcell = [mcellStart]
+    
+    virusTemp = virusStart
+    plasmaTemp = plasmaStart
+    mcellTemp = mcellStart
+    
+    for ix in range(time):
+        dvdt = a*virusTemp - b*plasmaTemp
+        dpdt = virusTemp*(c + d*mcellTemp) - e*plasmaTemp
+        dmdt = f*plasmaTemp - g*mcellTemp
+        virusTemp = virusTemp + dvdt
+        plasmaTemp = plasmaTemp + dpdt
+        mcellTemp = mcellTemp + dmdt
+        if virusTemp < 20: virusTemp = 0
+        if plasmaTemp < 5: plasmaTemp = 0
+        if mcellTemp < 2: mcellTemp = 2
+        if any([ix == 500, ix == 1000]):
+            virusTemp += 500
+        
+        virus.append(virusTemp)
+        plasma.append(plasmaTemp)
+        mcell.append(mcellTemp)    
+    return virus, plasma, mcell
+
+virus = 100
+plasma = 0
+mcell = 3
+
+parameterTimeChanger = 18
+a = 1/parameterTimeChanger #np.random.normal(2,0.2)
+b = 0.5/parameterTimeChanger
+c = 0.1/parameterTimeChanger # np.random.normal(1,0.1)
+d = 0.001/parameterTimeChanger
+e = 3/parameterTimeChanger
+f = 0.5/parameterTimeChanger
+g = 0.1/parameterTimeChanger
+
+time = 2000
+
+alphaValue = 1
+count = 0
+for mcell in [2]: 
+    virusPlot, plasmaPlot, mcellPlot = Model(a,b,c,d,e,f,g,time, virus, plasma, mcell)
+    if count == 0:
+        plt.plot(range(time+1),virusPlot, c = 'red', alpha = alphaValue, label = 'Antigen')
+        plt.plot(range(time+1),plasmaPlot, c = 'blue', alpha = alphaValue, label = 'Plasma cells')
+        plt.plot(range(time+1),mcellPlot, c = 'green', alpha = alphaValue, label = 'M cells')
+    if count == 1:
+        plt.plot(range(time+1),virusPlot, c = 'red', alpha = alphaValue, linestyle = '--')
+        plt.plot(range(time+1),plasmaPlot, c = 'blue', alpha = alphaValue, linestyle = '--')
+        plt.plot(range(time+1),mcellPlot, c = 'green', alpha = alphaValue, linestyle = '--', label = 'Agent B')
+    
+    count += 1
+plt.legend(fontsize = 12, loc = 'lower right')
+plt.yscale('log')
+# plt.xscale('log')
+plt.xlabel('Time cycle', fontsize = 15)
+plt.ylabel('Cells', fontsize = 15)
+plt.grid()
+
 
 
 #%% VACCINATION
@@ -217,14 +285,16 @@ for f, g in [[0.5/18, 0.1/18],[0.5/18*100, 0.1/18/10]]:
     if count == 0:
         ax1.plot(range(partTime),virusPlot[:partTime], c = 'red', alpha = alphaValue)
         ax1.plot(range(partTime),plasmaPlot[:partTime], c = 'blue', alpha = alphaValue)
-        ax1.plot(range(partTime),mcellPlot[:partTime], c = 'green', alpha = alphaValue, label = 'No vaccination')
-        ax2.plot(range(time),mcellPlot[:time], c = 'green', alpha = alphaValue, label = 'No vaccination')
+        ax1.plot(range(partTime),mcellPlot[:partTime], c = 'green', alpha = alphaValue, label = 'Agent C')
+        ax2.plot(range(time),mcellPlot[:time], c = 'green', alpha = alphaValue, label = 'Agent C')
     if count == 1:
         ax1.plot(range(partTime),virusPlot[:partTime], c = 'red', alpha = alphaValue, linestyle = '--')
         ax1.plot(range(partTime),plasmaPlot[:partTime], c = 'blue', alpha = alphaValue, linestyle = '--')
-        ax1.plot(range(partTime),mcellPlot[:partTime], c = 'green', alpha = alphaValue, linestyle = '--', label = 'Vaccination')
-        ax2.plot(range(time),mcellPlot[:time], c = 'green', alpha = alphaValue, linestyle = '--', label = 'Vaccination')
+        ax1.plot(range(partTime),mcellPlot[:partTime], c = 'green', alpha = alphaValue, linestyle = '--', label = 'Agent D')
+        ax2.plot(range(time),mcellPlot[:time], c = 'green', alpha = alphaValue, linestyle = '--', label = 'Agent D')
     count += 1
+    
+ax2.plot([0,time],[50000,50000], label = 'm$_{immune}$', color = 'blue')
 
 for axes in [ax1,ax2]:
     axes.legend(fontsize = 12)
@@ -235,7 +305,7 @@ for axes in [ax1,ax2]:
     axes.grid()
 
 
-# %%
+# %% Lower and Upper for base case
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -292,7 +362,7 @@ plt.yscale('log')
 # plt.xscale('log')
 plt.xlabel('Time cycle')
 plt.ylabel('Population')
-#%%    
+#%% DIFFERENT ANTIGEN progessions
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -368,3 +438,172 @@ plt.axis([0,time,1,1e7])
 # plt.xscale('log')
 plt.xlabel('Time')
 plt.ylabel('Antigen')
+
+
+#%% Chronic with reinfection
+import numpy as np
+import matplotlib.pyplot as plt
+
+def Model(a,b,c,d,e,f,g,time, virusStart, plasmaStart, mcellStart):
+    virus = [virusStart]
+    plasma = [plasmaStart]
+    mcell = [mcellStart]
+    
+    virusTemp = virusStart
+    plasmaTemp = plasmaStart
+    mcellTemp = mcellStart
+    
+    for ix in range(time):
+        dvdt = a*virusTemp - b*plasmaTemp
+        dpdt = virusTemp*(c + d*mcellTemp) - e*plasmaTemp
+        dmdt = f*plasmaTemp - g*mcellTemp
+        virusTemp = virusTemp + dvdt
+        plasmaTemp = plasmaTemp + dpdt
+        mcellTemp = mcellTemp + dmdt
+        if virusTemp < 20: virusTemp = 0
+        if plasmaTemp < 5: plasmaTemp = 0
+        if mcellTemp < 2: mcellTemp = 2
+        if ix == partTime/2:
+            virusTemp = virusTemp + 5000
+        virus.append(virusTemp)
+        plasma.append(plasmaTemp)
+        mcell.append(mcellTemp)    
+    return virus, plasma, mcell
+
+virus = 100
+plasma = 0
+mcell = 3
+
+parameterTimeChanger = 8
+a = 1/parameterTimeChanger #np.random.normal(2,0.2)
+b = 1/parameterTimeChanger
+c = 4/parameterTimeChanger # np.random.normal(1,0.1)
+d = 0.0002/parameterTimeChanger
+e = 5.5/parameterTimeChanger
+f = 0.5/parameterTimeChanger
+g = 0.1/parameterTimeChanger
+
+time = 25000
+partTime = 1600
+
+fig1, ax1 = plt.subplots(1)
+# fig2, ax2 = plt.subplots(1)
+
+alphaValue = 1
+count = 0
+# for f, g in [[0.5/18, 0.1/18],[0.5/18*100, 0.1/18/10]]: 
+virusPlot, plasmaPlot, mcellPlot = Model(a,b,c,d,e,f,g,time, virus, plasma, mcell)
+if count == 0:
+    ax1.plot(range(partTime),virusPlot[:partTime], c = 'red', alpha = alphaValue, label = 'Agent E antigen')
+    ax1.plot(range(partTime),plasmaPlot[:partTime], c = 'blue', alpha = alphaValue, label = 'Agent E plasma cells')
+    ax1.plot(range(partTime),mcellPlot[:partTime], c = 'green', alpha = alphaValue, label = 'Agent E M cells')
+    # ax2.plot(range(time),mcellPlot[:time], c = 'green', alpha = alphaValue, label = 'No vaccination')
+if count == 1:
+    ax1.plot(range(partTime),virusPlot[:partTime], c = 'red', alpha = alphaValue, linestyle = '--')
+    ax1.plot(range(partTime),plasmaPlot[:partTime], c = 'blue', alpha = alphaValue, linestyle = '--')
+    ax1.plot(range(partTime),mcellPlot[:partTime], c = 'green', alpha = alphaValue, linestyle = '--', label = 'Vaccination')
+    # ax2.plot(range(time),mcellPlot[:time], c = 'green', alpha = alphaValue, linestyle = '--', label = 'Vaccination')
+count += 1
+
+for axes in [ax1]:
+    axes.legend(fontsize = 12)
+    axes.set_yscale('log')
+    # plt.xscale('log')
+    axes.set_xlabel('Time cycle', fontsize = 15)
+    axes.set_ylabel('Cells', fontsize = 15)
+    axes.grid()
+
+#%% Chronic with Vaccination
+import numpy as np
+import matplotlib.pyplot as plt
+
+def Model(a,b,c,d,e,f,g,time, virusStart, plasmaStart, mcellStart, vaccinationStart):
+    virus = [virusStart]
+    plasma = [plasmaStart]
+    mcell = [mcellStart]
+    
+    virusTemp = virusStart
+    plasmaTemp = plasmaStart
+    mcellTemp = mcellStart
+    
+    fakevirus = virusStart
+    plasmacellsVaccination = plasmaStart
+    mcellsVaccination = mcellStart
+    
+    for ix in range(time):
+        dvdt = a*virusTemp - b*plasmaTemp
+        dpdt = virusTemp*(c + d*mcellTemp) - e*plasmaTemp
+        dmdt = f*plasmaTemp - g*mcellTemp
+        virusTemp = virusTemp + dvdt
+        plasmaTemp = plasmaTemp + dpdt
+        mcellTemp = mcellTemp + dmdt
+        if virusTemp < 20: virusTemp = 0
+        if plasmaTemp < 5: plasmaTemp = 0
+        if mcellTemp < 2: mcellTemp = 2
+        if vaccinationDelay < ix:
+            if vaccinationStart == True:
+                fakevirus, plasmacellsVaccination, mcellsVaccination = vaccination(fakevirus, plasmacellsVaccination, mcellsVaccination)
+                mcellTemp += mcellsVaccination
+            
+        virus.append(virusTemp)
+        plasma.append(plasmaTemp)
+        mcell.append(mcellTemp)    
+    return virus, plasma, mcell
+
+def vaccination(fakevirus, plasmacells, mcells):
+    dvdt = a*fakevirus - b*plasmacells
+    dpdt = fakevirus*(c + d*mcells) - e*plasmacells
+    dmdt = f*100*plasmacells - g*mcells/10
+    fakevirus = fakevirus + dvdt
+    plasmacells = plasmacells + dpdt
+    mcells = mcells + dmdt
+    if fakevirus < 20: fakevirus = 0
+    if plasmacells < 5: plasmacells = 0
+    if mcells < 2: mcells = 2
+    return fakevirus, plasmacells, mcells
+        
+
+virus = 100
+plasma = 0
+mcell = 3
+
+parameterTimeChanger = 8
+a = 1/parameterTimeChanger #np.random.normal(2,0.2)
+b = 1/parameterTimeChanger
+c = 4/parameterTimeChanger # np.random.normal(1,0.1)
+d = 0.0002/parameterTimeChanger
+e = 5.5/parameterTimeChanger
+f = 0.5/parameterTimeChanger
+g = 0.1/parameterTimeChanger
+
+time = 2500
+partTime = 800
+vaccinationDelay = 400
+
+fig1, ax1 = plt.subplots(1)
+# fig2, ax2 = plt.subplots(1)
+
+alphaValue = 1
+count = 0
+for vaccinationStart in [False, True]: 
+    virusPlot, plasmaPlot, mcellPlot = Model(a,b,c,d,e,f,g,time, virus, plasma, mcell, vaccinationStart)
+    if count == 0:
+        ax1.plot(range(partTime),virusPlot[:partTime], c = 'red', alpha = alphaValue)
+        ax1.plot(range(partTime),plasmaPlot[:partTime], c = 'blue', alpha = alphaValue)
+        ax1.plot(range(partTime),mcellPlot[:partTime], c = 'green', alpha = alphaValue, label = 'Agent F')
+        # ax2.plot(range(time),mcellPlot[:time], c = 'green', alpha = alphaValue, label = 'No vaccination')
+    if count == 1:
+        ax1.plot(range(partTime),virusPlot[:partTime], c = 'red', alpha = alphaValue, linestyle = '--')
+        ax1.plot(range(partTime),plasmaPlot[:partTime], c = 'blue', alpha = alphaValue, linestyle = '--')
+        ax1.plot(range(partTime),mcellPlot[:partTime], c = 'green', alpha = alphaValue, linestyle = '--', label = 'Agent G')
+        # ax2.plot(range(time),mcellPlot[:time], c = 'green', alpha = alphaValue, linestyle = '--', label = 'Vaccination')
+    count += 1
+
+for axes in [ax1]:
+    axes.legend(fontsize = 12)
+    axes.set_yscale('log')
+    # plt.xscale('log')
+    axes.set_xlabel('Time cycle', fontsize = 15)
+    axes.set_ylabel('Cells', fontsize = 15)
+    axes.grid()
+
