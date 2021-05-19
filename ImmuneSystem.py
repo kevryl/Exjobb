@@ -38,6 +38,9 @@ virus = 100
 plasma = 0
 mcell = 3
 
+# =============================================================================
+# Chronic 
+# =============================================================================
 parameterTimeChanger = 8
 a = 1/parameterTimeChanger #np.random.normal(2,0.2)
 b = 1/parameterTimeChanger
@@ -46,9 +49,30 @@ d = 0.0002/parameterTimeChanger
 e = 5.5/parameterTimeChanger
 f = 0.5/parameterTimeChanger
 g = 0.10/parameterTimeChanger
+parameterRange = np.array([0.6, 1.5, 0.7, 0.8, 0.9, 1.1, 1.2, 1.3, 1.4])/parameterTimeChanger # Chronic
+symptomTwo = 1000
+symptomThree = 10000
+symptomFour = 30000
+time = 700
+fulltime = 2000
 
-time = 500
-fulltime = 1000
+# =============================================================================
+# Base case
+# =============================================================================
+# parameterTimeChanger = 18
+# a = 1/parameterTimeChanger #np.random.normal(2,0.2)
+# b = 0.5/parameterTimeChanger
+# c = 0.1/parameterTimeChanger # np.random.normal(1,0.1)
+# d = 0.001/parameterTimeChanger
+# e = 3/parameterTimeChanger
+# f = 0.5/parameterTimeChanger
+# g = 0.5/parameterTimeChanger
+# parameterRange = np.array([1, 2, 1.2, 1.4, 1.6, 1.8])/parameterTimeChanger # Chronic
+# symptomTwo = 1000
+# symptomThree = 100000
+# symptomFour = 1000000
+# time = 200
+# fulltime = 800
 
 
 fig1, ax1 = plt.subplots(1)
@@ -56,24 +80,25 @@ fig2, ax2 = plt.subplots(1)
 fig3, ax3 = plt.subplots(1)
 fig4, ax4 = plt.subplots(1)
 
-for count, a in enumerate(np.array([0.6, 1.5, 0.7, 0.8, 0.9, 1.1, 1.2, 1.3, 1.4])/parameterTimeChanger):
+
+for count, a in enumerate(parameterRange):
     virusPlot, plasmaPlot, mcellPlot = Model(a,b,c,d,e,f,g,fulltime, virus, plasma, mcell)
     alphaValue = 1
     if count == 0:
-        ax1.plot(range(time),virusPlot[:time], c = 'red', alpha = alphaValue, label = 'upper')
-        ax1.plot(range(time),plasmaPlot[:time], c = 'blue', alpha = alphaValue)
-        ax1.plot(range(time),mcellPlot[:time], c = 'green', alpha = alphaValue)
-        ax2.plot(range(time),virusPlot[:time], c = 'red', alpha = alphaValue, label = 'Antigen') 
-        ax3.plot(range(time),plasmaPlot[:time], c = 'blue', alpha = alphaValue, label = 'Plasma cells')
-        ax4.plot(range(fulltime),mcellPlot[:fulltime], c = 'green', alpha = alphaValue, label = 'M cells')
-        
-    if count == 1:
-        ax1.plot(range(time),virusPlot[:time], c = 'red', alpha = alphaValue, label = 'lower', linestyle = '--')
+        ax1.plot(range(time),virusPlot[:time], c = 'red', alpha = alphaValue, label = 'Lower', linestyle = '--')
         ax1.plot(range(time),plasmaPlot[:time], c = 'blue', alpha = alphaValue, linestyle = '--')
         ax1.plot(range(time),mcellPlot[:time], c = 'green', alpha = alphaValue, linestyle = '--')
-        ax2.plot(range(time),virusPlot[:time], c = 'red', alpha = alphaValue, linestyle = '--')
-        ax3.plot(range(time),plasmaPlot[:time], c = 'blue', alpha = alphaValue, linestyle = '--')
-        ax4.plot(range(fulltime),mcellPlot[:fulltime], c = 'green', alpha = alphaValue, linestyle = '--')
+        ax2.plot(range(time),virusPlot[:time], c = 'red', alpha = alphaValue, label = 'Antigen', linestyle = '--') 
+        ax3.plot(range(time),plasmaPlot[:time], c = 'blue', alpha = alphaValue, label = 'Plasma cells', linestyle = '--')
+        ax4.plot(range(fulltime),mcellPlot[:fulltime], c = 'green', alpha = alphaValue, label = 'M cells', linestyle = '--')
+        
+    if count == 1:
+        ax1.plot(range(time),virusPlot[:time], c = 'red', alpha = alphaValue, label = 'Upper' )
+        ax1.plot(range(time),plasmaPlot[:time], c = 'blue', alpha = alphaValue )
+        ax1.plot(range(time),mcellPlot[:time], c = 'green', alpha = alphaValue )
+        ax2.plot(range(time),virusPlot[:time], c = 'red', alpha = alphaValue )
+        ax3.plot(range(time),plasmaPlot[:time], c = 'blue', alpha = alphaValue )
+        ax4.plot(range(fulltime),mcellPlot[:fulltime], c = 'green', alpha = alphaValue)
         
     else:
         alphaValue = 0.3
@@ -86,14 +111,24 @@ ax2.set_ylabel('Antigen', fontsize = 15)
 ax3.set_ylabel('Plasma cells', fontsize = 15)
 ax4.set_ylabel('M cells', fontsize = 15)
 
+ax3.plot([0, time], [symptomTwo, symptomTwo], c = 'black')
+ax3.plot([0, time], [symptomThree, symptomThree], c = 'black')
+ax3.plot([0, time], [symptomFour, symptomFour], c = 'black')
+ax3.text(0, symptomTwo/2, "1")
+ax3.text(0, symptomTwo*1.1, "2")
+ax3.text(0, symptomThree*1.1, "3")
+ax3.text(0, symptomFour*1.1, "4")
+
+ax4.plot([0, fulltime], [50000, 50000])
+
+ax1.legend(fontsize = 15)
 
 for axes in [ax1,ax2,ax3,ax4]:
-    if axes != ax4:
-        axes.axis([1, time, 1, 1e5])
-    if axes == ax4:
-        axes.axis([1, fulltime, 1, 1e5])
+    # if axes != ax4:
+        # axes.axis([1, time, 1, 1e5])
+    # if axes == ax4:
+    #     axes.axis([1, fulltime, 1, 1e5])
     axes.set_xlabel('Time cycle', fontsize = 15)
-    axes.legend(prop={'size': 15})
     axes.set_yscale('log')
     axes.grid()
 
