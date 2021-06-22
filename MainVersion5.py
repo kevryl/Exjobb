@@ -32,6 +32,8 @@ def Parameters():
     Parameters.initialMcellCount = int(initialMcellCountEntry.get())
     Parameters.totalVaccineDoses = int(totalVaccineDosesEntry.get())
     Parameters.vaccineEfficacy = float(vaccineEfficacyEntry.get())
+    Parameters.outsideInfectionTimeCycle = int(outsideInfectionTimeCycleEntry.get())
+    
     
     Parameters.modelTimeChanger = float(modelTimeChangerEntry.get())
     Parameters.modelTimeTotal = int(modelTimeTotalEntry.get())
@@ -274,6 +276,21 @@ def main():
 
             agentVirus = DiseaseSpeading(gridStructure, agentVirus, agentSymptom, agentInfectionProbability)
             
+            
+            if outsideInfectionOn.get() == True:
+                outsideInfectionCount = 0
+                randomIndex = np.random.permutation(Parameters.populationSize)
+                while outsideInfectionCount < Parameters.outsideInfectionTimeCycle:
+                    r = np.random.rand()
+                    randomAgentIndex = randomIndex[outsideInfectionCount]
+                    meetingProbability = np.power(1/5,agentSymptom[randomAgentIndex])
+                    infectionProbability = Parameters.infectionProbability
+                    if r < infectionProbability*meetingProbability:
+                        agentVirus[randomAgentIndex] = agentVirus[randomAgentIndex] + 100
+                    outsideInfectionCount += 1
+                        
+                
+            
             if vaccinationOn.get() == True:
                 if timecycle > int(vaccineTimeDelayEntry.get()):
                     vaccineDoses = 0
@@ -302,7 +319,7 @@ def main():
                     agentMcell += agentMcellFake
                     vaccinationList = np.delete(vaccinationList,removeIndex)
                     vaccinationList.tolist()
-               
+            
             totalInfected = 0
             totalSymptomatic = 0
             totalImmune = 0
@@ -492,6 +509,7 @@ initialMcellCountLabel = ttk.Label(content, text = "Initial mcell count")
 totalVaccineDosesLabel = ttk.Label(content, text = "Total vaccine doses per CT")
 vaccineEfficacyLabel = ttk.Label(content, text = "Vaccine efficacy")
 vaccineTimeDelayLabel = ttk.Label(content, text = "Vaccine time delay")
+outsideInfectionTimeCycleLabel = ttk.Label(content, text = "Outside infection/TC")
 
 modelTimeTotalLabel = ttk.Label(content, text = "Total model time")
 lowerParameterLabel = ttk.Label(content, text = "lower")
@@ -523,6 +541,7 @@ initialMcellCountEntry = ttk.Entry(content, width = 8)
 totalVaccineDosesEntry = ttk.Entry(content, width = 8)
 vaccineEfficacyEntry = ttk.Entry(content, width = 8)
 vaccineTimeDelayEntry = ttk.Entry(content, width = 8)
+outsideInfectionTimeCycleEntry = ttk.Entry(content, width = 8)
 multipleRunsEntry = ttk.Entry(content, width = 8)
 
 
@@ -567,6 +586,8 @@ disableCheck = ttk.Checkbutton(content, variable=value_check, text='Activate mul
 saveOn = BooleanVar(value = 0)
 saveOnCheck = ttk.Checkbutton(content, variable = saveOn, text = "Save run")
 
+outsideInfectionOn = BooleanVar(value = 0)
+outsideInfectionOnCheck = ttk.Checkbutton(content, variable = outsideInfectionOn, text = "Outside infection")
 
 # Insert default value
 simulationTimeEntry.insert(0,1000)
@@ -582,6 +603,7 @@ initialMcellCountEntry.insert(0,10)
 totalVaccineDosesEntry.insert(0,5)
 vaccineEfficacyEntry.insert(0,1)
 vaccineTimeDelayEntry.insert(0, 0)
+outsideInfectionTimeCycleEntry.insert(0,0)
 
 modelTimeChangerEntry.insert(0,18)
 modelTimeTotalEntry.insert(0,200)
@@ -706,6 +728,11 @@ vaccineTimeDelayLabel.grid(row = rowIndex, column = 0)
 vaccineTimeDelayEntry.grid (row = rowIndex, column = 1)
 
 rowIndex += 1
+outsideInfectionTimeCycleLabel.grid(row = rowIndex, column = 0)
+outsideInfectionTimeCycleEntry.grid(row = rowIndex, column = 1)
+
+
+rowIndex += 1
 checkboxLabel.grid(row = rowIndex, column = 0)
 
 rowIndex += 1
@@ -726,8 +753,11 @@ rowIndex += 1
 symptomPlotCheck.grid(row = rowIndex, column = 0, sticky = W)
 
 rowIndex += 1
-breakOnCheck.grid(row= rowIndex, column = 0, sticky = W)
+symptomPlotCheck.grid(row = rowIndex, column = 0, sticky = W)
 
+
+rowIndex += 1
+outsideInfectionOnCheck.grid(row= rowIndex, column = 0, sticky = W)
 
 rowIndex += 1
 disableCheck.grid(row = rowIndex, column = 0, sticky = W)
